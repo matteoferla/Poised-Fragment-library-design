@@ -1,3 +1,12 @@
+# General for Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# vanilla pythionics
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
