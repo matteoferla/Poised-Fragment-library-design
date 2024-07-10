@@ -1,4 +1,4 @@
-# Poised-Fragment-library-design
+# Sociably poised fragment library design
 The design of a fragment library that is sociably poised for the XChem in house synthesis robot
 
 ## Aims
