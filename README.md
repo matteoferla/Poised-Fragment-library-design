@@ -41,6 +41,10 @@ but it opens more issues that it resolves.
 9. Test 
 10. Iterate
 
+Example of minimum moiety (although this would be as super strict)
+
+![minimum-2nd-amide.png](images/minimum-2nd-amide.png)
+
 ### User reference guide
 Make a set of pages (html or pdf) that describes each compound, its sociability, its analogues and its presence in Chembl.
 
@@ -48,15 +52,11 @@ Make a set of pages (html or pdf) that describes each compound, its sociability,
 
 > See [DSiPoised analysis](DSiPoised_analysis.md)
 
-## Misc
+## ChEMBL bioactive
 
-Enamine downloads on cluster see https://github.com/matteoferla/Fragment-hit-follow-up-chemistry
-Enamine subsampled with [enamine_subsample.py](enamine_subsample.py)
+> See [ChEMBL bioactive](ChEMBL_bioactive.md)
 
-Enamine building block scaffold vectors
-Note that scaffolds were not fragmented by common reaction moieties, just Murcko decomposition.
-No effort was made to address isomorphic compounds, so index order will affect the values.
-Protection groups were not removed, so there are many Fmocs.
+## Other
 
-![top_BB_scaffold.png](images%2Ftop_BB_scaffold.png)
-![second_top_BB_scaffold.png](images%2Fsecond_top_BB_scaffold.png)
+* Enamine downloads on cluster see https://github.com/matteoferla/Fragment-hit-follow-up-chemistry
+* Enamine subsampled with [enamine_subsample.py](enamine_subsample.py)
