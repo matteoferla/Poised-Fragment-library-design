@@ -14,12 +14,12 @@ Requirements:
 
 ## Workflow
 
-## Groundwork
+### Groundwork
 What has come before
 
 1. Analysis of historic data, expanding off [Carbery et al. 2022](https://pubs.acs.org/doi/10.1021/acs.jmedchem.2c01004).
 
-## Validation
+### Validation
 Given a library assess how much it fits our criteria
 
 * Sociability
@@ -28,7 +28,7 @@ Given a library assess how much it fits our criteria
 I experimented with Gold docking in the hope that there would be a modicum of validity,
 but it opens more issues that it resolves.
 
-## Design
+### Design
 
 1. Starting from a collection of amidation/Suzuki–decomposed Murcko scaffolds
 2. Count superstructures at each vector in the greater building blocking and screening collection
@@ -41,20 +41,22 @@ but it opens more issues that it resolves.
 9. Test 
 10. Iterate
 
-## Limitations of DSiPoised
+### User reference guide
+Make a set of pages (html or pdf) that describes each compound, its sociability, its analogues and its presence in Chembl.
 
-The DSiPoised is great for elaborations, but does not cover as much interaction diversity as
-the 3D libraries for example.
+## DSiPoised analysis
 
-The DSiPoised was made by shortlisting compounds by scoring for reaction moieties among various things. Four issues arise:
-1.	These were not the smallest expansions, for example, a N-methylamide. A reaction moiety joining two big scaffolds means that it is not an expansion vector and instead introduces the problem that the two need to be assesses for which is the largest contributor.
-2.	How the building blocks were made is irrelevant, instead it kills diversity
-3.	Broad reaction set. Most in-house robotic synthesis combinatorial approaches rely on a very small subset of reactions (Suzuki, Schotten–Baumann and Buchwald–Hartwig), only for certain series are specific reactions employed. Cycloaddition products could certainly be helpful (e.g. Hantzsch, Diels–Alder, Büchi–Paterno cycloadditions), but generally the ring may need changing.
-4.	Poor sociability. This is because the scaffold could be made via the reaction used in scoring, but this does not reflect the number of close analogues actually in catalogue space. The filtering criteria also could be said to have caused issues.
-5.	Overly large. Large compounds are problematic as they open up the box of what is most relevant
-6.	Tanimoto. The similarity filtering was done by Tanimoto similarity as a result there are many smaller compounds differ by one atom. Graph edit distance is by far a better metric (but very expensive).
+> See [DSiPoised analysis](DSiPoised_analysis.md)
 
-## Steps
+## Misc
 
 Enamine downloads on cluster see https://github.com/matteoferla/Fragment-hit-follow-up-chemistry
-Enamine subsampled.
+Enamine subsampled with [enamine_subsample.py](enamine_subsample.py)
+
+Enamine building block scaffold vectors
+Note that scaffolds were not fragmented by common reaction moieties, just Murcko decomposition.
+No effort was made to address isomorphic compounds, so index order will affect the values.
+Protection groups were not removed, so there are many Fmocs.
+
+![top_BB_scaffold.png](images%2Ftop_BB_scaffold.png)
+![second_top_BB_scaffold.png](images%2Fsecond_top_BB_scaffold.png)

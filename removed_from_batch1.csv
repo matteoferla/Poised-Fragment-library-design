@@ -1,0 +1,245 @@
+ID,MW,Name,Smiles
+Z1650040241,142.2,N-(pyrrolidin-3-yl)propanamide,CCC(=O)NC1CCNC1
+Z2856434897,232.33,1-(2-phenylethyl)piperidine-4-carboxamide,NC(=O)C1CCN(CCc2ccccc2)CC1
+Z2856434858,211.69,(3R)-1-[(4-chlorophenyl)methyl]pyrrolidin-3-ol,OC1CCN(Cc2ccc(Cl)cc2)C1
+Z1401333862,187.25,N-benzyl-1-methyl-1H-pyrazol-3-amine,Cn1ccc(NCc2ccccc2)n1
+Z1745658474,191.11,2-(trifluoromethyl)pyrimidine-5-carboxamide,NC(=O)c1cnc(C(F)(F)F)nc1
+Z1437171658,139.2,methyl[1-(1-methyl-1H-pyrazol-4-yl)ethyl]amine,CNC(C)c1cnn(C)c1
+Z1891772663,201.22,2-acetamido-2-(oxan-4-yl)acetic acid,CC(=O)NC(C(=O)O)C1CCOCC1
+Z818732104,144.22,1-(morpholin-4-yl)propan-2-amine,CC(N)CN1CCOCC1
+Z2429435052,194.71,1-[(3S)-3-aminopyrrolidin-1-yl]-2-methylpropan-2-ol hydrochloride,CC(C)(O)CN1CCC(N)C1.Cl
+Z1247413608,179.24,1-methanesulfonylpiperidin-4-ol,CS(=O)(=O)N1CCC(O)CC1
+Z1245580425,142.25,2-(2-methylpiperidin-1-yl)ethan-1-amine,CC1CCCCN1CCN
+Z1269638430,158.2,N-(morpholin-2-ylmethyl)acetamide,CC(=O)NCC1CNCCO1
+Z2467208649,175.24,"N-(propan-2-yl)-1H-1,3-benzodiazol-2-amine",CC(C)Nc1nc2ccccc2[nH]1
+Z2856434843,131.18,2-(morpholin-4-yl)ethan-1-ol,OCCN1CCOCC1
+Z1526748660,163.17,"4,4-difluorocyclohexane-1-carboxamide",NC(=O)C1CCC(F)(F)CC1
+Z1354416068,176.22,"1-(5-amino-2,3-dihydro-1H-isoindol-2-yl)ethan-1-one",CC(=O)N1Cc2ccc(N)cc2C1
+Z1259339735,210.28,"1-{5-[(dimethylamino)methyl]-1,2,4-oxadiazol-3-yl}cyclopentan-1-amine",CN(C)Cc1nc(C2(N)CCCC2)no1
+Z1955122823,134.14,3-methoxypyridine-2-carbonitrile,COc1cccnc1C#N
+Z1359419878,176.18,"2-(2-methoxyphenyl)-1,3,4-oxadiazole",COc1ccccc1-c1nnco1
+Z1636723439,144.17,N-methylmorpholine-2-carboxamide,CNC(=O)C1CNCCO1
+Z2734782702,212.2,"3,4,5-trimethoxybenzoic acid",COc1cc(C(=O)O)cc(OC)c1OC
+Z1673618163,230.29,S-(4-aminophenyl)-2-hydroxy-N-methylethane-1-sulfonamido,CN(CCO)S(=O)(=O)c1ccc(N)cc1
+Z927412236,170.26,2-amino-1-(2-methylpiperidin-1-yl)propan-1-one,CC(N)C(=O)N1CCCCC1C
+Z1003207278,191.29,1-cyclohexyl-N-methylmethanesulfonamide,CNS(=O)(=O)CC1CCCCC1
+Z2856434896,215.3,benzyl(methyl)[(5-methylfuran-2-yl)methyl]amine,Cc1ccc(CN(C)Cc2ccccc2)o1
+Z1992316315,171.29,"2-(3,3,4-trimethylpiperazin-1-yl)ethan-1-amine",CN1CCN(CCN)CC1(C)C
+Z1741785925,142.2,4-methylpiperidine-2-carboxamide,CC1CCNC(C(N)=O)C1
+Z1186029914,208.24,1-(2-fluorophenyl)-3-(methylamino)pyrrolidin-2-one,CNC1CCN(c2ccccc2F)C1=O
+Z2856434816,240.76,(pyridin-4-ylmethyl)(thiophen-2-ylmethyl)amine hydrochloride,Cl.c1csc(CNCc2ccncc2)c1
+Z805551440,175.21,"N,N-dimethyl-1H-pyrazole-4-sulfonamide",CN(C)S(=O)(=O)c1cn[nH]c1
+Z2856434815,160.22,4-[(dimethylamino)methyl]benzonitrile,CN(C)Cc1ccc(C#N)cc1
+Z1741960769,236.22,[4-(trifluoromethoxy)phenyl]thiourea,NC(=S)Nc1ccc(OC(F)(F)F)cc1
+Z1262327505,177.25,N-(pyrrolidin-3-ylmethyl)pyridin-2-amine,c1ccc(NCC2CCNC2)nc1
+Z336089202,199.25,2-(benzyloxy)aniline,Nc1ccccc1OCc1ccccc1
+Z1267885772,191.28,3-methyl-1-(6-methylpyridin-2-yl)piperazine,Cc1cccc(N2CCNC(C)C2)n1
+Z1259161657,191.29,2-methanesulfonyl-N-methylcyclohexan-1-amine,CNC1CCCCC1S(C)(=O)=O
+Z1613492358,140.19,4-(1H-pyrazol-1-yl)butan-2-ol,CC(O)CCn1cccn1
+Z1787158625,156.23,N-(4-aminocyclohexyl)acetamide,CC(=O)NC1CCC(N)CC1
+Z2510259379,155.16,"1-(propan-2-yl)-1H-1,2,3-triazole-4-carboxylic acid",CC(C)n1cc(C(=O)O)nn1
+Z1124201124,140.14,ethyl 1H-pyrazole-4-carboxylate,CCOC(=O)c1cn[nH]c1
+Z1374778753,209.64,"[1-(4-chlorophenyl)-1H-1,2,3-triazol-4-yl]methanol",OCc1cn(-c2ccc(Cl)cc2)nn1
+Z1868430535,143.14,1-acetylazetidine-3-carboxylic acid,CC(=O)N1CC(C(=O)O)C1
+Z1824511473,173.17,"(2R,4R)-1-acetyl-4-hydroxypyrrolidine-2-carboxylic acid",CC(=O)N1CC(O)CC1C(=O)O
+Z2856434767,140.19,3-(morpholin-4-yl)propanenitrile,N#CCCN1CCOCC1
+Z2442288995,239.71,"1-(3-benzyl-1,2,4-oxadiazol-5-yl)ethan-1-amine hydrochloride",CC(N)c1nc(Cc2ccccc2)no1.Cl
+Z1343633025,153.16,2-fluoro-4-methylbenzamide,Cc1ccc(C(N)=O)c(F)c1
+Z812517112,183.28,"1-(1,3-thiazol-4-ylmethyl)piperazine",c1nc(CN2CCNCC2)cs1
+Z2856434854,248.33,1-[(3-methoxyphenyl)methyl]piperidine-4-carboxamide,COc1cccc(CN2CCC(C(N)=O)CC2)c1
+Z2856434779,212.25,2-(4-phenylphenyl)acetic acid,O=C(O)Cc1ccc(-c2ccccc2)cc1
+Z271004858,249.29,4-amino-N-(pyridin-2-yl)benzene-1-sulfonamide,Nc1ccc(S(=O)(=O)Nc2ccccn2)cc1
+Z2856434941,209.25,"(2S)-1-[(2H-1,3-benzodioxol-5-ylmethyl)amino]propan-2-ol",CC(O)CNCc1ccc2c(c1)OCO2
+Z2856434944,237.28,N-(4-fluorophenyl)-4-methylpiperazine-1-carboxamide,CN1CCN(C(=O)Nc2ccc(F)cc2)CC1
+Z1816233707,180.16,6-(methylcarbamoyl)pyridine-2-carboxylic acid,CNC(=O)c1cccc(C(=O)O)n1
+Z2856434762,122.17,"N,N-dimethylpyridin-4-amine",CN(C)c1ccncc1
+Z2856434783,251.73,benzyl[(4-fluorophenyl)methyl]amine hydrochloride,Cl.Fc1ccc(CNCc2ccccc2)cc1
+Z2177153697,179.22,"3-cyclopropyl-5-(pyrrolidin-3-yl)-1,2,4-oxadiazole",C1CC(c2nc(C3CC3)no2)CN1
+Z1849009686,203.24,(4-fluoro-2-methylphenyl)methanesulfonamide,Cc1cc(F)ccc1CS(N)(=O)=O
+Z1874937335,157.17,1-(dimethylcarbamoyl)cyclopropane-1-carboxylic acid,CN(C)C(=O)C1(C(=O)O)CC1
+Z1259155959,142.16,"4-(2-hydroxyethyl)-5-methyl-2,3-dihydro-1H-pyrazol-3-one",Cc1[nH][nH]c(=O)c1CCO
+Z969560582,156.21,"N,2-dimethyl-1,3-thiazole-5-carboxamide",CNC(=O)c1cnc(C)s1
+Z2856434856,211.69,4-[(3-chlorophenyl)methyl]morpholine,Clc1cccc(CN2CCOCC2)c1
+Z969560308,234.32,"4-[4-(propan-2-yloxy)phenyl]-1,3-thiazol-2-amine",CC(C)Oc1ccc(-c2csc(N)n2)cc1
+Z2856434857,209.31,3-(thiomorpholin-4-ylmethyl)phenol,Oc1cccc(CN2CCSCC2)c1
+Z2241115980,334.35,1-(furan-2-ylmethyl)-4-methanesulfonylpiperazine; oxalic acid,CS(=O)(=O)N1CCN(Cc2ccco2)CC1.O=C(O)C(=O)O
+Z2856434806,235.72,2-[4-(3-chlorophenyl)piperazin-1-yl]acetonitrile,N#CCN1CCN(c2cccc(Cl)c2)CC1
+Z1407673036,199.27,2-phenylpropane-1-sulfonamide,CC(CS(N)(=O)=O)c1ccccc1
+Z57744604,231.26,"5-[(2-phenylethyl)amino]pyrimidine-2,4-diol",Oc1ncc(NCCc2ccccc2)c(O)n1
+Z1367324110,226.3,"1-methyl-1,2,3,4-tetrahydroquinoline-7-sulfonamide",CN1CCCc2ccc(S(N)(=O)=O)cc21
+Z1954800564,180.23,"5-methoxy-1,3-benzothiazol-2-amine",COc1ccc2sc(N)nc2c1
+Z2856434912,228.34,3-[(4-methylpiperidin-1-yl)methyl]-1H-indole,CC1CCN(Cc2c[nH]c3ccccc23)CC1
+Z2856434926,215.27,"4-(furan-2-ylmethyl)-1??-thiomorpholine-1,1-dione",O=S1(=O)CCN(Cc2ccco2)CC1
+Z2735692823,238.72,N-(3-chlorophenyl)-2-(pyrrolidin-1-yl)acetamide,O=C(CN1CCCC1)Nc1cccc(Cl)c1
+Z1430613384,217.23,N-(3-hydroxy-4-methylphenyl)furan-2-carboxamide,Cc1ccc(NC(=O)c2ccco2)cc1O
+Z1904249627,210.3,"N,2-dimethyl-4,5,6,7-tetrahydro-1,3-benzothiazole-4-carboxamide",CNC(=O)C1CCCc2sc(C)nc21
+Z1741815708,142.25,"2-(2,2-dimethylpyrrolidin-1-yl)ethan-1-amine",CC1(C)CCCN1CCN
+Z2856434839,212.12,[(1-ethyl-1H-pyrazol-5-yl)methyl](methyl)amine dihydrochloride,CCn1nccc1CNC.Cl.Cl
+Z1407672867,151.17,2-cyclopropyl-1H-imidazole-4-carboxamide,NC(=O)c1c[nH]c(C2CC2)n1
+Z1259162160,171.2,2-cyclopropyl-2-acetamidopropanoic acid,CC(=O)NC(C)(C(=O)O)C1CC1
+Z2442270563,207.28,"4-[(3-cyclopropyl-1,2,4-oxadiazol-5-yl)methyl]piperidine",C1CC(Cc2nc(C3CC3)no2)CCN1
+Z1454310449,191.21,N-[(2-fluorophenyl)methyl]-1H-pyrazol-4-amine,Fc1ccccc1CNc1cn[nH]c1
+Z1268152398,180.13,"1-ethyl-3-(trifluoromethyl)-4,5-dihydro-1H-pyrazol-5-one",CCN1N=C(C(F)(F)F)CC1=O
+Z1229798311,197.17,2-acetamido-6-fluorobenzoic acid,CC(=O)Nc1cccc(F)c1C(=O)O
+Z2856434901,141.26,(2-cyclohexylethyl)(methyl)amine,CNCCC1CCCCC1
+Z1259341012,206.29,1-[4-(morpholin-4-yl)phenyl]ethan-1-amine,CC(N)c1ccc(N2CCOCC2)cc1
+Z2377835233,244.73,1-methyl-3-(piperidin-3-yl)-1H-pyrazole-4-carboxamide hydrochloride,Cl.Cn1cc(C(N)=O)c(C2CCCNC2)n1
+Z1259341037,136.2,N-(propan-2-yl)pyridin-3-amine,CC(C)Nc1cccnc1
+Z2856434770,155.63,[(3-chlorophenyl)methyl](methyl)amine,CNCc1cccc(Cl)c1
+Z1551688335,180.21,2-hydroxy-N-(pyridin-2-ylmethyl)propanamide,CC(O)C(=O)NCc1ccccn1
+Z2856434814,165.24,3-(diethylamino)phenol,CCN(CC)c1cccc(O)c1
+Z2856434900,129.2,1-tert-butylazetidin-3-ol,CC(C)(C)N1CC(O)C1
+Z2064898127,214.27,N-[(2R)-oxolan-2-ylmethyl]morpholine-4-carboxamide,O=C(NCC1CCCO1)N1CCOCC1
+Z2856434894,192.31,"N,N-dimethyl-4-{[(propan-2-yl)amino]methyl}aniline",CC(C)NCc1ccc(N(C)C)cc1
+Z2293643386,187.2,1-acetyl-3-hydroxypiperidine-3-carboxylic acid,CC(=O)N1CCCC(O)(C(=O)O)C1
+Z1250132544,170.19,1-(3-fluorophenoxy)propan-2-ol,CC(O)COc1cccc(F)c1
+Z2527301677,224.69,"1-(1-phenyl-1H-1,2,3-triazol-4-yl)ethan-1-amine hydrochloride",CC(N)c1cn(-c2ccccc2)nn1.Cl
+Z2142244288,217.26,N-ethyl-2-fluoro-4-methanesulfonylaniline,CCNc1ccc(S(C)(=O)=O)cc1F
+Z1492796719,190.25,"N-(1,2,3,4-tetrahydroquinolin-3-yl)acetamide",CC(=O)NC1CNc2ccccc2C1
+Z803153598,298.24,"1-(4-methyl-1,3-thiazole-5-carbonyl)-1,4-diazepane dihydrochloride",Cc1ncsc1C(=O)N1CCCNCC1.Cl.Cl
+Z359352902,205.64,5-[(dimethylamino)methyl]furan-2-carboxylic acid hydrochloride,CN(C)Cc1ccc(C(=O)O)o1.Cl
+Z1507502062,191.23,"6-methoxy-2,3,4,5-tetrahydro-1H-1-benzazepin-2-one",COc1cccc2c1CCCC(=O)N2
+Z126932614,210.26,"2-(methanesulfonylmethyl)-1H-1,3-benzodiazole",CS(=O)(=O)Cc1nc2ccccc2[nH]1
+Z1430613393,245.26,3-fluoro-N-(3-hydroxy-4-methylphenyl)benzamide,Cc1ccc(NC(=O)c2cccc(F)c2)cc1O
+Z190662888,204.23,2-cyano-N-[(4-methoxyphenyl)methyl]acetamide,COc1ccc(CNC(=O)CC#N)cc1
+Z2447286438,240.74,N-methyl-N-phenylpyrrolidine-3-carboxamide hydrochloride,CN(C(=O)C1CCNC1)c1ccccc1.Cl
+Z2697514548,175.19,1-methyl-1H-indazole-3-carboxamide,Cn1nc(C(N)=O)c2ccccc21
+Z2856434776,191.15,[2-(trifluoromethoxy)phenyl]methanamine,NCc1ccccc1OC(F)(F)F
+Z2856434786,158.63,methyl(pyridin-4-ylmethyl)amine hydrochloride,CNCc1ccncc1.Cl
+Z1373430305,210.25,3-fluoro-N-(oxan-4-ylmethyl)pyridin-2-amine,Fc1cccnc1NCC1CCOCC1
+Z2027049478,152.18,"3-(1,3-thiazol-2-yl)-4H-1,2,4-triazole",c1csc(-c2nnc[nH]2)n1
+Z2856434938,240.74,[(5-methoxy-1H-indol-3-yl)methyl]dimethylamine hydrochloride,COc1ccc2[nH]cc(CN(C)C)c2c1.Cl
+Z1741966151,192.28,N-(piperidin-4-ylmethyl)methanesulfonamide,CS(=O)(=O)NCC1CCNCC1
+Z1259086950,207.27,(4-benzylmorpholin-2-yl)methanol,OCC1CN(Cc2ccccc2)CCO1
+Z1262398388,205.65,5-(4-chlorophenyl)pyrimidin-4-amine,Nc1ncncc1-c1ccc(Cl)cc1
+Z1324080698,189.21,3-fluoro-5-methylbenzene-1-sulfonamide,Cc1cc(F)cc(S(N)(=O)=O)c1
+Z2856434899,197.3,1-(thiophen-3-ylmethyl)piperidin-4-ol,OC1CCN(Cc2ccsc2)CC1
+Z1103351268,173.26,2-methyl-1-[(oxan-4-yl)amino]propan-2-ol,CC(C)(O)CNC1CCOCC1
+Z2856434791,195.24,4-[(3-fluorophenyl)methyl]morpholine,Fc1cccc(CN2CCOCC2)c1
+Z1139246057,192.27,N-methyl-1-(pyridazin-3-yl)piperidin-3-amine,CNC1CCCN(c2cccnn2)C1
+Z1350579414,167.21,"5-ethyl-3-(pyrrolidin-2-yl)-1,2,4-oxadiazole",CCc1nc(C2CCCN2)no1
+Z1263811695,144.22,2-(3-methylmorpholin-4-yl)ethan-1-amine,CC1COCCN1CCN
+Z1362754425,140.19,1-(2-methyl-1H-imidazol-1-yl)propan-2-ol,Cc1nccn1CC(C)O
+Z1515654336,175.14,3-(difluoromethyl)-1-methyl-1H-pyrazole-4-carboxamide,Cn1cc(C(N)=O)c(C(F)F)n1
+Z1509882419,189.24,1-(propan-2-yl)-1H-imidazole-4-sulfonamide,CC(C)n1cnc(S(N)(=O)=O)c1
+Z1444783243,193.2,2-(2-acetamidophenyl)acetic acid,CC(=O)Nc1ccccc1CC(=O)O
+Z2856434887,193.25,2-(morpholin-4-ylmethyl)phenol,Oc1ccccc1CN1CCOCC1
+Z1348559502,142.2,1-(methylamino)cyclopentane-1-carboxamide,CNC1(C(N)=O)CCCC1
+Z2856434918,180.21,2-(4-ethoxyphenyl)acetic acid,CCOc1ccc(CC(=O)O)cc1
+Z2856434865,223.34,4-[2-(phenylsulfanyl)ethyl]morpholine,c1ccc(SCCN2CCOCC2)cc1
+Z2856434874,233.36,1-{[4-(propan-2-yl)phenyl]methyl}piperidin-4-ol,CC(C)c1ccc(CN2CCC(O)CC2)cc1
+Z2856434845,228.25,4-(benzyloxy)benzoic acid,O=C(O)c1ccc(OCc2ccccc2)cc1
+Z2856434813,200.28,1-{4-[(2-methoxyethyl)amino]piperidin-1-yl}ethan-1-one,COCCNC1CCN(C(C)=O)CC1
+Z1741973467,219.29,4-(4-methoxybenzoyl)piperidine,COc1ccc(C(=O)C2CCNCC2)cc1
+Z730649594,242.28,N-[2-(4-hydroxyphenyl)ethyl]pyridine-2-carboxamide,O=C(NCCc1ccc(O)cc1)c1ccccn1
+Z2856434807,231.3,2-[4-(2-methoxyphenyl)piperazin-1-yl]acetonitrile,COc1ccccc1N1CCN(CC#N)CC1
+Z2856434937,194.19,2-(4-acetylphenoxy)acetic acid,CC(=O)c1ccc(OCC(=O)O)cc1
+Z2856434868,222.31,1-ethyl-N-(2-fluorophenyl)piperidin-4-amine,CCN1CCC(Nc2ccccc2F)CC1
+Z927400026,186.26,2-amino-3-methyl-1-(morpholin-4-yl)butan-1-one,CC(C)C(N)C(=O)N1CCOCC1
+Z1266823232,170.28,"[1-(dimethyl-1,3-thiazol-5-yl)ethyl](methyl)amine",CNC(C)c1sc(C)nc1C
+Z1267773566,155.2,"2-methyl-1-(3-methyl-1,2,4-oxadiazol-5-yl)propan-1-amine",Cc1noc(C(N)C(C)C)n1
+Z2092370954,178.24,3-amino-N-ethyl-N-methylbenzamide,CCN(C)C(=O)c1cccc(N)c1
+Z2443429438,262.76,(3S)-1-(benzenesulfonyl)pyrrolidin-3-amine hydrochloride,Cl.NC1CCN(S(=O)(=O)c2ccccc2)C1
+Z2444997446,229.32,"[(2S,4S)-4-fluoro-1-[(2-methyl-1,3-thiazol-4-yl)methyl]pyrrolidin-2-yl]methanamine",Cc1nc(CN2CC(F)CC2CN)cs1
+Z1267882044,178.24,N-(oxolan-2-ylmethyl)pyridin-4-amine,c1cc(NCC2CCCO2)ccn1
+Z1263529721,162.24,N-[1-(pyridin-3-yl)ethyl]cyclopropanamine,CC(NC1CC1)c1cccnc1
+Z1891773393,240.74,N-[4-(1-aminoethyl)phenyl]cyclopropanecarboxamide hydrochloride,CC(N)c1ccc(NC(=O)C2CC2)cc1.Cl
+Z1593306637,242.71,1-(4-chlorophenyl)-3-[(2R)-1-hydroxybutan-2-yl]urea,CCC(CO)NC(=O)Nc1ccc(Cl)cc1
+Z2027158783,177.16,"N-(2,1,3-benzoxadiazol-4-yl)acetamide",CC(=O)Nc1cccc2nonc12
+Z2856434878,237.3,"4-[(3,4-dimethoxyphenyl)methyl]morpholine",COc1ccc(CN2CCOCC2)cc1OC
+Z2856434881,239.32,"2-(1,2,3,4-tetrahydroisoquinolin-2-ylmethyl)phenol",Oc1ccccc1CN1CCc2ccccc2C1
+Z1635496816,193.2,"N-(6-methyl-2H-1,3-benzodioxol-5-yl)acetamide",CC(=O)Nc1cc2c(cc1C)OCO2
+Z2735592898,207.3,"N,N,4-trimethylpiperazine-1-sulfonamide",CN1CCN(S(=O)(=O)N(C)C)CC1
+Z2856434929,239.34,"4-[(4-methylphenyl)methyl]-1??-thiomorpholine-1,1-dione",Cc1ccc(CN2CCS(=O)(=O)CC2)cc1
+Z1891773476,179.22,"(2,3-dihydro-1,4-benzodioxin-2-ylmethyl)(methyl)amine",CNCC1COc2ccccc2O1
+Z2856434851,240.28,4-({[(4-fluorophenyl)methyl]amino}methyl)benzonitrile,N#Cc1ccc(CNCc2ccc(F)cc2)cc1
+Z2301438417,164.17,"1,3-dimethyl-1H-pyrazolo[3,4-d]pyridazin-7-ol",Cc1nn(C)c2c(O)nncc12
+Z818727262,141.21,N-(oxolan-3-ylmethyl)cyclopropanamine,C1CC(CNC2CC2)CO1
+Z1273312153,174.2,N-methyl-1H-indole-7-carboxamide,CNC(=O)c1cccc2cc[nH]c12
+Z2856434917,203.67,"(3,4-dimethoxyphenyl)methanamine hydrochloride",COc1ccc(CN)cc1OC.Cl
+Z1267773633,156.25,"[(2-ethyl-1,3-thiazol-5-yl)methyl](methyl)amine",CCc1ncc(CNC)s1
+Z1267773786,137.19,N-ethyl-6-methylpyridazin-3-amine,CCNc1ccc(C)nn1
+Z1896597864,134.14,3-(methylamino)pyrazine-2-carbonitrile,CNc1nccnc1C#N
+Z2442269480,203.25,"2-(3-methyl-1,2,4-oxadiazol-5-yl)-1-phenylethan-1-amine",Cc1noc(CC(N)c2ccccc2)n1
+Z1267881672,205.26,(2S)-N-(6-methylpyridin-2-yl)pyrrolidine-2-carboxamide,Cc1cccc(NC(=O)C2CCCN2)n1
+Z2204875953,188.19,"3-(2H-1,3-benzodioxol-5-yl)-1H-pyrazole",c1cc(-c2ccc3c(c2)OCO3)n[nH]1
+Z1454840342,159.19,1-[2-(hydroxymethyl)morpholin-4-yl]ethan-1-one,CC(=O)N1CCOC(CO)C1
+Z1245580461,142.25,2-(4-methylpiperidin-1-yl)ethan-1-amine,CC1CCN(CCN)CC1
+Z425387594,242.75,1-(2-ethoxyphenyl)piperazine hydrochloride,CCOc1ccccc1N1CCNCC1.Cl
+Z1259335913,225.36,"{1-[(2-methyl-1,3-thiazol-4-yl)methyl]piperidin-4-yl}methanamine",Cc1nc(CN2CCC(CN)CC2)cs1
+Z1741794237,144.22,2-(2-methylpiperazin-1-yl)ethan-1-ol,CC1CNCCN1CCO
+Z1578665941,198.29,"1-(3-methyl-1,2,4-thiadiazol-5-yl)-1,4-diazepane",Cc1nsc(N2CCCNCC2)n1
+Z1250132788,150.23,methyl[1-(pyridin-4-yl)propyl]amine,CCC(NC)c1ccncc1
+Z1263714198,167.21,"1-(1,2-oxazol-3-ylmethyl)piperazine",c1cc(CN2CCNCC2)no1
+Z1650168321,204.27,"N-(8-methyl-1,2,3,4-tetrahydroquinolin-5-yl)acetamide",CC(=O)Nc1ccc(C)c2c1CCCN2
+Z2856434942,222.26,N-(4-fluorophenyl)-2-(pyrrolidin-1-yl)acetamide,O=C(CN1CCCC1)Nc1ccc(F)cc1
+Z2856434798,244.3,5-(morpholin-4-ylmethyl)quinolin-8-ol,Oc1ccc(CN2CCOCC2)c2cccnc12
+Z2434225559,198.65,"2,3-dihydro-1H-indole-5-carboxamide hydrochloride",Cl.NC(=O)c1ccc2c(c1)CCN2
+Z102768020,187.25,methyl[(1-phenyl-1H-pyrazol-4-yl)methyl]amine,CNCc1cnn(-c2ccccc2)c1
+Z2856434883,246.36,1-{4-[(2-phenylethyl)amino]piperidin-1-yl}ethan-1-one,CC(=O)N1CCC(NCCc2ccccc2)CC1
+Z2856434902,228.3,5-(pyrrolidin-1-ylmethyl)quinolin-8-ol,Oc1ccc(CN2CCCC2)c2cccnc12
+Z2856434836,248.33,2-(4-methylphenoxy)-1-(4-methylpiperazin-1-yl)ethan-1-one,Cc1ccc(OCC(=O)N2CCN(C)CC2)cc1
+Z2856434903,233.32,N-[4-(4-methylpiperazin-1-yl)phenyl]acetamide,CC(=O)Nc1ccc(N2CCN(C)CC2)cc1
+Z1891776064,244.08,"[1-(3,4-dichlorophenyl)-1H-1,2,3-triazol-4-yl]methanol",OCc1cn(-c2ccc(Cl)c(Cl)c2)nn1
+Z943693514,181.19,N-(4-hydroxyphenyl)-2-methoxyacetamide,COCC(=O)Nc1ccc(O)cc1
+Z1273141646,156.14,"5-(methoxymethyl)-1,2-oxazole-3-carboxamide",COCc1cc(C(N)=O)no1
+Z2856434809,225.64,methyl({[4-(trifluoromethyl)phenyl]methyl})amine hydrochloride,CNCc1ccc(C(F)(F)F)cc1.Cl
+Z2856434890,219.29,4-methyl-N-phenylpiperazine-1-carboxamide,CN1CCN(C(=O)Nc2ccccc2)CC1
+Z2327226104,203.2,"1-(2-methylphenyl)-1H-1,2,3-triazole-4-carboxylic acid",Cc1ccccc1-n1cc(C(=O)O)nn1
+Z2856434905,115.18,[(2R)-1-methylpyrrolidin-2-yl]methanol,CN1CCCC1CO
+Z1212984951,204.27,3-(methylamino)-1-phenylpiperidin-2-one,CNC1CCCN(c2ccccc2)C1=O
+Z2856434909,234.13,"(2S)-1-{[(2,6-dichlorophenyl)methyl]amino}propan-2-ol",CC(O)CNCc1c(Cl)cccc1Cl
+Z1891776952,239.15,"2-(1H-1,2,3-triazol-1-ylmethyl)piperidine dihydrochloride",Cl.Cl.c1cn(CC2CCCCN2)nn1
+Z1603775714,152.2,[(6-methoxypyridin-2-yl)methyl](methyl)amine,CNCc1cccc(OC)n1
+Z1171978788,194.19,2-(N-methyl-1-pyridin-2-ylformamido)acetic acid,CN(CC(=O)O)C(=O)c1ccccn1
+Z1674937530,140.19,2-(1-ethyl-1H-pyrazol-4-yl)ethan-1-ol,CCn1cc(CCO)cn1
+Z1267773591,184.28,1-(oxan-4-ylmethyl)piperazine,C1CN(CC2CCOCC2)CCN1
+Z458894644,166.18,6-ethoxypyridine-3-carboxamide,CCOc1ccc(C(N)=O)cn1
+Z2241127906,205.3,4-[(cyclohexylamino)methyl]phenol,Oc1ccc(CNC2CCCCC2)cc1
+Z1271660837,140.19,"ethyl[(1-methyl-1H-1,2,3-triazol-4-yl)methyl]amine",CCNCc1cn(C)nn1
+Z2856434925,219.69,"4-[(5-chloro-1,2,3-thiadiazol-4-yl)methyl]morpholine",Clc1snnc1CN1CCOCC1
+Z1827898537,176.26,N-benzylpyrrolidin-3-amine,c1ccc(CNC2CCNC2)cc1
+Z1169060901,145.2,[4-(methylamino)oxan-4-yl]methanol,CNC1(CO)CCOCC1
+Z1262327459,184.28,2-methyl-N-(piperidin-3-ylmethyl)propanamide,CC(C)C(=O)NCC1CCCNC1
+Z2856434875,234.3,N-[4-(morpholin-4-ylmethyl)phenyl]acetamide,CC(=O)Nc1ccc(CN2CCOCC2)cc1
+Z2856434888,175.66,[(1-ethyl-1H-pyrazol-3-yl)methyl](methyl)amine hydrochloride,CCn1ccc(CNC)n1.Cl
+Z1696822287,199.26,1-[4-(pyrimidin-5-yl)phenyl]ethan-1-amine,CC(N)c1ccc(-c2cncnc2)cc1
+Z1545196403,191.21,2-fluoro-N-(1H-pyrazol-3-ylmethyl)aniline,Fc1ccccc1NCc1cc[nH]n1
+Z57345491,224.74,3-chloro-4-(4-methylpiperidin-1-yl)aniline,CC1CCN(c2ccc(N)cc2Cl)CC1
+Z319545618,197.24,3-[(2-methyl-1H-imidazol-1-yl)methyl]benzonitrile,Cc1nccn1Cc1cccc(C#N)c1
+Z1741964527,239.32,1-(diphenylmethyl)azetidin-3-ol,OC1CN(C(c2ccccc2)c2ccccc2)C1
+Z2856434840,237.73,4-(4-methylpiperazin-1-yl)benzonitrile hydrochloride,CN1CCN(c2ccc(C#N)cc2)CC1.Cl
+Z1703168683,203.24,(3-fluoro-4-methylphenyl)methanesulfonamide,Cc1ccc(CS(N)(=O)=O)cc1F
+Z823455846,209.27,N-[(2-fluorophenyl)methyl]oxan-4-amine,Fc1ccccc1CNC1CCOCC1
+Z2444672448,325.62,1-{[1-(difluoromethyl)-1H-imidazol-2-yl]methyl}piperazine trihydrochloride,Cl.Cl.Cl.FC(F)n1ccnc1CN1CCNCC1
+Z2856434829,240.25,"1-(3,4-difluorobenzoyl)-4-methylpiperazine",CN1CCN(C(=O)c2ccc(F)c(F)c2)CC1
+Z212045094,178.25,N-(piperidin-4-yl)methanesulfonamide,CS(=O)(=O)NC1CCNCC1
+Z2856434884,246.36,1-[4-(3-phenylpropyl)piperazin-1-yl]ethan-1-one,CC(=O)N1CCN(CCCc2ccccc2)CC1
+Z1310876699,244.27,2-fluoro-N-[2-(pyridin-4-yl)ethyl]benzamide,O=C(NCCc1ccncc1)c1ccccc1F
+Z1429867185,147.18,4-methoxy-1H-indole,COc1cccc2[nH]ccc12
+Z2856434910,204.23,"4-benzylpiperazine-2,6-dione",O=C1CN(Cc2ccccc2)CC(=O)N1
+Z1270312110,187.25,"2-(3,5-dimethyl-1H-pyrazol-4-yl)aniline",Cc1n[nH]c(C)c1-c1ccccc1N
+Z933326822,199.25,3-(benzyloxy)aniline,Nc1cccc(OCc2ccccc2)c1
+Z2856434893,157.26,1-(cyclohexylamino)propan-2-ol,CC(O)CNC1CCCCC1
+Z2856434773,207.7,ethyl 2-(piperidin-1-yl)acetate hydrochloride,CCOC(=O)CN1CCCCC1.Cl
+Z1713595338,178.25,[(2R)-1-methanesulfonylpyrrolidin-2-yl]methanamine,CS(=O)(=O)N1CCCC1CN
+Z1238477790,185.22,2-(cyclopentylformamido)propanoic acid,CC(NC(=O)C1CCCC1)C(=O)O
+Z1172243962,196.23,5-fluoro-N-(oxan-4-yl)pyridin-2-amine,Fc1ccc(NC2CCOCC2)nc1
+Z1396419547,143.23,2-[(2-methylcyclopentyl)amino]ethan-1-ol,CC1CCCC1NCCO
+Z744754722,150.2,2-(thiophen-2-yl)-1H-imidazole,c1csc(-c2ncc[nH]2)c1
+Z168883358,142.2,"1-(1,4-diazepan-1-yl)ethan-1-one",CC(=O)N1CCCNCC1
+Z1992316287,136.2,N-ethyl-3-methylpyridin-2-amine,CCNc1ncccc1C
+Z763030030,190.22,"N-methyl-1-(5-methyl-1,2-oxazol-3-yl)methanesulfonamide",CNS(=O)(=O)Cc1cc(C)on1
+Z2856434898,240.35,1-benzyl-4-(1H-pyrrol-1-yl)piperidine,c1ccc(CN2CCC(n3cccc3)CC2)cc1
+Z2856434920,221.28,"ethyl 2-(1,1-dioxo-1??-thiomorpholin-4-yl)acetate",CCOC(=O)CN1CCS(=O)(=O)CC1
+Z2856434871,245.25,4-{[4-(trifluoromethyl)phenyl]methyl}morpholine,FC(F)(F)c1ccc(CN2CCOCC2)cc1
+Z1262254278,199.3,"2-(1,4-diazepan-1-yl)-N-(propan-2-yl)acetamide",CC(C)NC(=O)CN1CCCNCC1
+Z1312590981,159.19,2-hydroxy-2-(oxan-4-yl)acetamide,NC(=O)C(O)C1CCOCC1
+Z2856434821,199.32,2-methyl-2-{[(3-methylthiophen-2-yl)methyl]amino}propan-1-ol,Cc1ccsc1CNC(C)(C)CO
+Z2856434940,205.3,N-[(4-methoxyphenyl)methyl]cyclopentanamine,COc1ccc(CNC2CCCC2)cc1
+Z2856434824,209.27,[(4-fluorophenyl)methyl][(2R)-oxolan-2-ylmethyl]amine,Fc1ccc(CNCC2CCCO2)cc1
+Z2856434804,200.24,methyl 1-(carbamoylmethyl)piperidine-4-carboxylate,COC(=O)C1CCN(CC(N)=O)CC1
+Z1650868495,219.29,4-(4-methylphenyl)piperazine-1-carboxamide,Cc1ccc(N2CCN(C(N)=O)CC2)cc1
+Z223688272,193.2,2-(N-methylacetamido)benzoic acid,CC(=O)N(C)c1ccccc1C(=O)O
+Z2856434826,238.35,1-(propan-2-yl)-4-(thiophene-2-carbonyl)piperazine,CC(C)N1CCN(C(=O)c2cccs2)CC1
+Z2856434834,248.33,"N-(2,3-dimethylphenyl)-2-(morpholin-4-yl)acetamide",Cc1cccc(NC(=O)CN2CCOCC2)c1C
