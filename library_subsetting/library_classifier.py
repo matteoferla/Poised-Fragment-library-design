@@ -1,12 +1,14 @@
 import io
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, NewType, Union
 
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, AllChem, rdDeprotect
 from rdkit.Chem.rdfiltercatalog import FilterCatalogParams, FilterCatalog
+
+InchiType = NewType('InchiType', str)
 
 # pains
 _params = FilterCatalogParams()
@@ -22,20 +24,24 @@ class RoboDecomposer:
 
     """
 
-    def __init__(self, amide=True, sulfonamide=True, biaryl=True, arylamine=False, ether=False):
+    def __init__(self, simplify_halide=True, amide=True, sulfonamide=True, biaryl=True, arylamine=False, ether=False):
         # order matter as they will be run in that way
         self.rxns: Dict[str, AllChem.ChemicalReaction] = {}
+        if simplify_halide:
+            # not a real reaction, but a simplification
+            simplification_rxn = AllChem.ReactionFromSmarts('[Cl,Br,I:1]>>[Cl:1]')
+            self.rxns['halo-simplification'] = simplification_rxn
         if amide:
             # secondary exocyclic amides only:
             # Does not break lactams
             # amide_hydrolysis_rxn = AllChem.ReactionFromSmarts('[C!R:1](=[O:2])-[NH:3]>>[C!R:1](=[O:2])[O].[N:3]')
             # secondary/tertiary exocyclic amides, but no ureido
             amide_hydrolysis_rxn = AllChem.ReactionFromSmarts(
-                '[N:1]-[C!R:2](=[O:3])-[!n&!N:4]>>[N:1].[O][C:2](=[O:3])-[*:4]')
+                '[N:1]-[C!R:2](=[O:3])-[!n&!N:4]>>[N:1].[Cl][C:2](=[O:3])-[*:4]')
             self.rxns['alkyl-amide'] = amide_hydrolysis_rxn
-            # this is Schotten-Baumann only but I am pretending its carboxylic acid based
+            # this is Schotten-Baumann only
             aromatic_amide_hydrolysis_rxn = AllChem.ReactionFromSmarts(
-                '[n:1]-[C!R:2](=[O:3])-[!N:4]>>[nH:1].[O][C:2](=[O:3])-[*:4]')
+                '[n:1]-[C!R:2](=[O:3])-[!N:4]>>[nH:1].[Cl][C:2](=[O:3])-[*:4]')
             self.rxns['aryl-amide'] = aromatic_amide_hydrolysis_rxn
         if sulfonamide:
             # sulfonamide
@@ -146,7 +152,7 @@ class Classifier:
     Namely:
 
     * `min_hbonds` - minimum number of HBonds
-    * `min_synthon_amicability` - see below
+    * `min_synthon_sociability` - see below
     * `min_weighted_robogroups` - minumum number of wanted reaction product moieties (amide, sulfonamide, biaryl etc.)
     * `max_rota_per_da` - stop overly long rotatable bonds
     * `max_N_methylene` - like above but specific for too many CH2
@@ -183,7 +189,7 @@ class Classifier:
                       }
     cutoffs = dict(min_hbonds=5,
                    min_N_rings=1,
-                   min_synthon_amicability=124,  # top quartile
+                   min_synthon_sociability=124,  # top quartile
                    min_weighted_robogroups=3,  # median
                    # max_rota_per_hbond=2,
                    max_rota_per_da=0.021,  # discard lower quartile
@@ -194,11 +200,13 @@ class Classifier:
     # PAINS
     pains_catalog = FilterCatalog(_params)
 
-    def __init__(self, amicability):
-        if isinstance(amicability, dict):
-            self.amicability = amicability
-        elif isinstance(amicability, str) and '.json' in amicability:
-            self.amicability = json.loads(Path(amicability).read_text())
+    def __init__(self, sociability: Optional[Union[Dict[InchiType, float], str]] = None):
+        if isinstance(sociability, dict):
+            self.sociability = sociability
+        elif isinstance(sociability, str) and '.json' in sociability:
+            self.sociability = json.loads(Path(sociability).read_text())
+        else:
+            self.sociability = {}
         self.robodecomposer = RoboDecomposer()
 
     def enable_analysis_mode(self):
@@ -262,11 +270,11 @@ class Classifier:
     def calc_synthon_info(self, mol, verdict):
         synthons = self.robodecomposer.decompose(mol)
         verdict['N_synthons'] = len(synthons)
-        # amicability is Dict of inchi to value,
+        # sociability is Dict of inchi to value,
         # where value is N of VCs with synthon times N of synthons with USRCAT > 0.7
         # the sum (not rare synthon penalised by roots)
-        verdict['synthon_amicability'] = sum(
-            [self.amicability.get(Chem.MolToInchi(synthon), -0.) for synthon in synthons])
+        verdict['synthon_sociability'] = sum(
+            [self.sociability.get(Chem.MolToInchi(synthon), -0.) for synthon in synthons])
 
     def calc_robogroups(self, mol: Chem.Mol, verdict: dict):
         # ## Scoring wanted groups

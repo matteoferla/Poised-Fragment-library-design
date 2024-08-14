@@ -1,5 +1,5 @@
 """
-Calculate the synthon amicability of a library.
+Calculate the synthon sociability of a library.
 See pharmacophore-distances.md for details.
 
 This code is not parallel (pandarallel and rdkit do not play well together).
@@ -89,7 +89,7 @@ def get_weighted_USRCAT07(query_usrcat, synthons: pd.DataFrame) -> float:
         score += row.counts if rdMolDescriptors.GetUSRScore(query_usrcat, target_usrcat) > 0.7 else 0
     return score
 
-def calculate_amicability(tally: Dict[InchiType, float], n_compounds: int) -> pd.DataFrame:
+def calculate_sociability(tally: Dict[InchiType, float], n_compounds: int) -> pd.DataFrame:
     synthons = pd.DataFrame({'inchi': tally.keys(), 'counts': tally.values()})
     add_mol(synthons)  # add `mol` columns (3D embeds the molecules)
     synthons['USRCAT'] = synthons.mol.apply(get_usrcat)
@@ -116,18 +116,20 @@ def main(filename: str):
     tock = time.time()
     print('Elapsed time:', tock - tick)
     # ----------------------------------------
-    # ## get the amicability
-    synthons: pd.DataFrame = calculate_amicability(nonsingleton_tally, n_compounds)
+    # ## get the sociability
+    synthons: pd.DataFrame = calculate_sociability(nonsingleton_tally, n_compounds)
     stem = re.match('(.*)\.\w+\.bz2', Path(filename).name).group(1)
     synthons.to_csv(f'{stem}_synthons.csv')
-    amicability: Dict[InchiType, float] = synthons.set_index('inchi')['nor_weighted_USRCAT0.7'].to_dict()
-    Path(f'{stem}_amicability.json').write_text(json.dumps(amicability))
+    sociability: Dict[InchiType, float] = synthons.set_index('inchi')['nor_weighted_USRCAT0.7'].to_dict()
+    Path(f'{stem}_sociability.json').write_text(json.dumps(sociability))
     tock = time.time()
     print('Elapsed time:', tock-tick)
     # ----------------------------------------
     # ## Stats
-    unique, counts = np.unique(np.array(list(amicability.values())), return_counts=True)
-    xmin = min(unique) # deal with shift
+    # use integer to make automatic binning easier/smoother
+    a = synthons['weighted_USRCAT0.7'].values.astype(int)
+    unique, counts = np.unique(a, return_counts=True)
+    xmin = min(unique)  # deal with shift
     filtered_counts = counts[unique >= xmin]
     filtered_unique = unique[unique >= xmin]
     start = filtered_unique.min()

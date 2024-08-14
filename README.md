@@ -82,7 +82,7 @@ This reverses the following bonds:
 
 * _Amides_: fully exocyclic, or exocyclic carbonyls with alicylic nitrogen, secondary or tertiary amides,
     avoids ureido and lactam.
-    This results in carboxylic acid and amine.
+    This results in aryl-chloride and amine.
     For simplicity this lumps together amidation and Schotten-Baumann reaction (cf. tertiary amides).
     The Buckwald-Hartwig amination is not included, hence the lack of aryl nitrogens.
 * _Sulfonamides_: fully exocyclic, or exocyclic carbonyls, secondary or tertiary sulfonamides.
@@ -92,10 +92,18 @@ This reverses the following bonds:
     This results in two aryl halides (for simplicity: one would be a boronic acid/ester).
     This is the Suzuki–Miyaura reaction product.
 
+Additionally, for simplicity, all halogens are collapsed into chloride.
+Whereas they have different properties, they are a good way to reduce unneeded diversity.
+
 Other reactions, such as Buckwald-Hartwig amination, Sonogashira coupling, Buch reductive amination, Williamson ether synthesis, Ugi reaction, Chan-Lam coupling etc. are not included.
 As a results the distribution of synthons heavy atom count is positively skewed.
 
-![](images/HAC-synthon.png)
+### First pass synthon amicabilty
+In a first pass, random slices of 100k the Enamine REAL database were used.
+For each synthon, the sum of dataset-counts of each synthons within USRCAT 0.7.
+For a compound the synthon amicability is the sum of the amicabilities tally for each synthon.
+
+![synthon](images/HAC-synthon.png)
 
 However, the synthon amicability score is higher for smaller synthons.
 
@@ -112,12 +120,33 @@ whereas methods that use the internal distances between pharmacophores, may be m
 
 The cutoff of 0.7 was chosen because it is traditional in USRCAT, but also is in the tail range of the distribution of USRCAT scores.
 
-This synthon illuestrates
+This synthon illuestrates the issue with USRCAT:
 ![img.png](images/example_synthon.png)
 
-![img.png](images/most_amicable_synthons.png)
 
-The amicability of a synthon
+To make the analysis easier, random slices of 100k the Enamine REAL database were used,
+and compared to another.
+
+In the first pass, amidation hydrolysis was resulting in a carboxylic acid, this was changed to an arylchloride,
+to make it less of a common pharmacophore —even if chloride is a hydrophobe type.
+The most amicable synthons are [here](images/most_amicable_synthons.png).
+This shows a problem that these operate as a group (i.e. top place is shared between a bunch of fragments) and 
+the presence of a synthon once can make it to the top ranking. 
+Whereas there is an 88% Pearson &rho;, the Jaccard index is 0.61 for the top quartile.
+
+The issue is that uncommon synthons can be highly amicable with common synthons,
+making the list of amicable synthons very long/variable.
+A solution would be not to make a perfect list of precomputed synthon amicability tallies,
+but to calculate the amicability partially on the fly, using a small reference set of synthons.
+
+As the most common synthons lack rings. It should be enforced that they have at least a ring.
+
+For 1M subset, there are ~60k synthons. ~30% are singletons. 7% are doublets. 1% appear 5+ times.
+1k is a nice number and is 10+ times with rings in the 1M subset.
+
+### Second pass synthon amicabilty
+
+With a Cuda implementation of USRScore it takes ~0.6 ms to get the USRCATScores for 1k synthons.
 
 ## Other
 
