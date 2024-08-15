@@ -20,47 +20,55 @@ from library_classification import RoboDecomposer, InchiType
 from torch_usrcat import GPUClassifier
 from pebble import ProcessPool
 from rdkit import RDLogger
-from typing import List
+from typing import List, Dict
 import numpy as np
 import numpy.typing as npt
 
 num_cpus = os.cpu_count()
 pd.set_option('future.no_silent_downcasting', True)
 RDLogger.DisableLog('rdApp.*')
-RoboDecomposer().test()
 
-common_synthons = pd.read_pickle('common_synthons.pkl.gz').set_index('inchi')
-# it's ``counts`` plural due to a typo
-common_synthons_tally: npt.NDArray[np.int_[...]] = common_synthons.counts.values  # Shape: (N, 1)
-common_synthons_usrcats: npt.NDArray[np.float_] = common_synthons.USRCAT.values  # Shape: (N, 60)
-
-chunk_size = 10_000
-classifier = GPUClassifier(common_synthons_tally=common_synthons_tally,
-                           common_synthons_usrcats=common_synthons_usrcats)
-
+# ========================================================================================
 
 def write_jsonl(obj, filename):
     with open(filename, 'a') as fh:
         fh.write(json.dumps(obj) + '\n')
 
+def read_jsonl(filename):
+    if not os.path.exists(filename):
+        return []
+    with open(filename) as fh:
+        return [json.loads(line) for line in fh]
 
-def process_chunk(chunk: str, filename: str, i: int, headers: List[str]):
+def process_chunk(chunk: str, filename: str, i: int, headers: List[str],
+                  common_synthons_tally,
+                    common_synthons_usrcats
+                  ):
     output_file = '/tmp/output/' + Path(filename).stem + f'/filtered_chunk{i}.bz2'
+    classifier = GPUClassifier(common_synthons_tally=common_synthons_tally,
+                               common_synthons_usrcats=common_synthons_usrcats)
     # header_info is based off headers, but modified a bit
     df = GPUClassifier.read_cxsmiles_block('\n'.join(chunk), header_info=GPUClassifier.enamine_header_info)
+    dejavu: Dict[InchiType, int]
+    for dejavu in read_jsonl('results-backup.jsonl'):
+        classifier.dejavu_synthons.update(dejavu)
+
     verdicts = classifier.classify_df(df)
     Path(output_file).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
         for key in ['N_synthons', 'synthon_sociability', 'weighted_robogroups']:
             df[key] = verdicts[key]
-        txt = '\t'.join(map(str, headers)) + '\n'
         cols = ['SMILES', 'Identifier', 'synthon_sociability', 'N_synthons', 'weighted_robogroups']
+        txt = '\t'.join(map(str, cols)) + '\n'
         for idx, row in df.loc[verdicts.acceptable].iterrows():
             txt += '\t'.join([str(row[k]) for k in cols]) + '\n'
         with bz2.open(output_file, 'wt') as fh:
             fh.write(txt)
-    info = {'filename': filename, 'chunk_idx': i, **verdicts.issue.value_counts().to_dict()}
+    info = {'filename': filename, 'output_filename': output_file, 'chunk_idx': i,
+            **verdicts.issue.value_counts().to_dict()}
     write_jsonl(info, 'results-backup.jsonl')
+    write_jsonl(classifier.dejavu_synthons, 'seen_synthons.jsonl')
+
     return info
 
 
@@ -77,25 +85,20 @@ def chunked_iterator(iterable, size):
 
 # ========================================================================================
 # ## Process the file
-max_workers = num_cpus - 1
-# path = Path(sys.argv[1])
-path = Path('Enamine_REAL_10k_random_sampled.cxsmiles.bz2')
-filename = path.as_posix()
-print(filename)
-assert path.exists(), 'file does not exist'
-output_file = f'selection_{path.stem}.bz2'
 
 
-class FutureHandler:
+
+
+class ParallelMaster:
     """
     The reason for this is to not overload the system with too many futures.
     As the blocks are big
     """
+    max_workers = num_cpus - 1
 
-    def __init__(self, max_workers:int):
+    def __init__(self):
         self.futures = []
         self.results = []
-        self.max_workers = max_workers
 
     def resolve(self):
         for future in self.futures:
@@ -115,31 +118,63 @@ class FutureHandler:
             self.resolve()
             self.futures = []
 
+    def process_file(self, filename: str, common_synthons_tally, common_synthons_usrcats):
+        """
 
-with ProcessPool(max_workers=max_workers) as pool:
-    fuhandler = FutureHandler()
-    with bz2.open(filename, 'rt') as fh:
-        headers = next(fh).strip().split('\t')
-        for i, chunk in enumerate(chunked_iterator(fh, chunk_size)):
-            fuhandler.wait()
-            # test version:
-            # process_chunk = test_process_chunk
-            future = pool.schedule(process_chunk, args=(chunk, filename, i, headers))
-            fuhandler.futures.append(future)
-
-df = pd.DataFrame(fuhandler.results)
-df.to_csv(f'{path.stem}_reduction_results.csv')
+        :param filename:
+        :return: summary pd.DataFrame
+        """
+        path = Path(filename)
+        assert path.exists(), 'file does not exist'
+        # process_chunk writes out...
+        # ------
+        with ProcessPool(max_workers=self.max_workers) as pool:
+            with bz2.open(filename, 'rt') as fh:
+                headers = next(fh).strip().split('\t')
+                for i, chunk in enumerate(chunked_iterator(fh, chunk_size)):
+                    self.wait()
+                    # test version:
+                    # process_chunk = test_process_chunk
+                    args = (chunk, filename, i, headers, common_synthons_tally, common_synthons_usrcats)
+                    future = pool.schedule(process_chunk, args=args)
+                    self.futures.append(future)
+        self.wait()
+        df = pd.DataFrame(self.results)
+        return df
 
 # ========================================================================================
-# ## Combine the outputs
-n = 0
-with bz2.open(output_file, 'wt') as output_fh:
-    for path in Path('/tmp/output/' + path.stem).glob('*.bz2'):
-        with bz2.open(path, 'rt') as input_fh:
-            if n > 0:
-                next(input_fh)  # skip header line
-            for line in input_fh:
-                n += 1
-                output_fh.write(line)
+if __name__ == '__main__':
+    # make sure all is in order
+    RoboDecomposer().test()
+    chunk_size = 10_000
+    GPUClassifier.cutoffs['min_synthon_sociability'] = 100
+    GPUClassifier.cutoffs['min_weighted_robogroups'] = 2
+    GPUClassifier.cutoffs['max_boringness'] = 0
+    print(GPUClassifier.cutoffs)
 
-print(f"Combined output written to {output_file} - {n} lines")
+    # 'common_synthons.pkl.gz'
+    common_synthons = pd.read_pickle(sys.argv[2])  # .set_index('inchi')
+    common_synthons_tally: npt.NDArray[np.int_] = common_synthons.tally.values  # Shape: (N, 1)
+    common_synthons_usrcats: List[List[float]] = common_synthons.USRCAT.to_list()  # Shape: (N, 60)
+
+    master = ParallelMaster()
+    filename = sys.argv[1]
+    df = master.process_file(filename,
+                            common_synthons_tally=common_synthons_tally,
+                            common_synthons_usrcats=common_synthons_usrcats)
+    df.to_csv(f'{Path(filename).stem}_reduction_results.csv')
+    # assert len(df), 'No compounds were selected'
+    # for some reason the results are not being passed back to the main process
+    output_file = f'{Path(filename).stem}_selection.bz2'
+    # ## Combine the outputs
+    n = 0
+    with bz2.open(output_file, 'wt') as output_fh:
+        for path in Path('/tmp/output') / Path(filename).stem / 'filtered_chunk*.bz2':
+            with bz2.open(path.as_posix(), 'rt') as input_fh:
+                if n > 0:
+                    next(input_fh)  # skip header line
+                for line in input_fh:
+                    n += 1
+                    output_fh.write(line)
+
+    print(f"Combined output written to {output_file} - {n} lines")

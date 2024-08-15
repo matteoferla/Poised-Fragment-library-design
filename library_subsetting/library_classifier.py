@@ -1,5 +1,6 @@
 import io
 import json
+import itertools
 from pathlib import Path
 from typing import List, Dict, Any, Optional, NewType, Union
 
@@ -13,6 +14,11 @@ InchiType = NewType('InchiType', str)
 # pains
 _params = FilterCatalogParams()
 _params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+
+
+def calc_n_fused_rings(mol):
+    ars = mol.GetRingInfo().AtomRings()
+    return sum([len(set(fore).intersection(aft)) > 1 for fore, aft in list(itertools.combinations(ars, 2))])
 
 
 class RoboDecomposer:
@@ -126,7 +132,7 @@ class RoboDecomposer:
                               biaryl=('n1(cccc1)-c1(ccccc1)', 2)
                               ).items():
             mol = Chem.MolFromSmiles(smi[0])
-            synthons = robodecomposer.decompose(mol)
+            synthons: List[Chem.Mol] = robodecomposer.decompose(mol)
             assert len(synthons) == smi[1], f'{name} failed'
             results.append(dict(name=name, input=mol, output=synthons, expected_products=smi[1]))
         return results
@@ -189,10 +195,10 @@ class Classifier:
                       }
     cutoffs = dict(min_hbonds=5,
                    min_N_rings=1,
-                   min_synthon_sociability=124,  # top quartile
+                   min_synthon_sociability=0,  # let's see
                    min_weighted_robogroups=3,  # median
                    # max_rota_per_hbond=2,
-                   max_rota_per_da=0.021,  # discard lower quartile
+                   max_rota_per_da=0.021,  # discard lower quartile... that is how bad enamine is
                    max_N_methylene=6,
                    max_N_protection_groups=0,
                    max_largest_ring_size=8, )
@@ -222,6 +228,8 @@ class Classifier:
             self.assess(verdict)
             mol = Chem.MolFromSmiles(row.SMILES)
             self.calc_mol_info(mol, verdict)
+            self.assess(verdict)
+            self.calc_boringness(mol, verdict)
             self.assess(verdict)
             self.assess_mol_patterns(mol, verdict)
             self.calc_synthon_info(mol, verdict)
@@ -268,7 +276,7 @@ class Classifier:
             raise BadCompound('PAINS')
 
     def calc_synthon_info(self, mol, verdict):
-        synthons = self.robodecomposer.decompose(mol)
+        synthons: List[Chem.Mol] = self.robodecomposer.decompose(mol)
         verdict['N_synthons'] = len(synthons)
         # sociability is Dict of inchi to value,
         # where value is N of VCs with synthon times N of synthons with USRCAT > 0.7
@@ -282,6 +290,30 @@ class Classifier:
         for name, pattern in self.wanted.items():
             verdict[f'N_{name}'] = len(Chem.Mol.GetSubstructMatches(mol, pattern))
             verdict[f'weighted_robogroups'] += verdict[f'N_{name}'] * self.wanted_weights[name]
+
+    def calc_boringness(self, mol: Chem.Mol, verdict: dict):
+        """
+        A big problem is that the top sociable compounds are boring compounds
+        Namely, phenyls galore.
+        """
+        verdict['N_spiro'] = rdMolDescriptors.CalcNumSpiroAtoms(mol)
+        verdict['N_bridgehead'] = rdMolDescriptors.CalcNumBridgeheadAtoms(mol)
+        # an `AliphaticRings` includes heterocycles.
+        verdict['N_alicyclics'] = rdMolDescriptors.CalcNumAliphaticRings(mol)
+        verdict['N_fused_rings'] = calc_n_fused_rings(mol)
+        verdict['N_heterocyclics'] = rdMolDescriptors.CalcNumHeterocycles(mol)
+        verdict['N_aromatic_carbocylics'] = rdMolDescriptors.CalcNumAromaticCarbocycles(mol)
+        # previously calculated: # not a methylene radical but a -CH2- group
+        verdict['N_methylene'] = len(mol.GetSubstructMatches(Chem.MolFromSmarts('[CH2X4!R]')))
+        # make an arbitrary score of coolness
+        cool_keys = ['N_spiro', 'N_bridgehead', 'N_alicyclics', 'N_fused_rings']
+        # halfcool_keys = ['N_heterocyclics']
+        boring_keys = ['N_aromatic_carbocylics']
+        # boringish_keys = ['N_methylene']
+        verdict['boringness'] = sum(map(verdict.get, boring_keys)) + \
+                                verdict['N_methylene'] / 4 - \
+                                sum(map(verdict.get, cool_keys)) - \
+                                verdict['N_heterocyclics'] / 2
 
     def classify_df(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -326,7 +358,7 @@ class Classifier:
         "LogP": float,  # default is sLogP
         "HBA": int,
         "HBD": int,
-        "Rotatable_Bonds": int, # default is RotBonds
+        "Rotatable_Bonds": int,  # default is RotBonds
         "FSP3": float,
         "TPSA": float,
         "lead-like": float,

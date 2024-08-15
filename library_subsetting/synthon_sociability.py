@@ -1,4 +1,6 @@
 """
+> Use tally.py
+
 Calculate the synthon sociability of a library.
 See pharmacophore-distances.md for details.
 

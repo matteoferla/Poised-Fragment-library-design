@@ -1,6 +1,6 @@
 import torch
-from typing import Dict
-from library_classifier import Classifier, InchiType
+from typing import Dict, List
+from library_classifier import Classifier, InchiType, RoboDecomposer
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, AllChem
 
@@ -51,20 +51,23 @@ class GPUClassifier(Classifier):
         self.common_synthons_tally = torch.tensor(common_synthons_tally, device='cuda')
         self.common_synthons_usrcats = torch.tensor(common_synthons_usrcats, device='cuda')
         self.dejavu_synthons: Dict[InchiType, int] = {}
+        self.robodecomposer = RoboDecomposer()
 
-    def calc_sociability(self, synthon: InchiType) -> float:
-        if synthon in self.dejavu_synthons:
-            return self.dejavu_synthons[synthon]
-        mol = Chem.MolFromInchi(synthon)
-        AllChem.EmbedMolecule(mol)
-        if Chem.Mol.GetNumHeavyAtoms(mol) < 3 or Chem.Mol.GetNumConformers(mol) == 0:
-            return 0
-        synthon_usrcat = torch.tensor(rdMolDescriptors.GetUSRCAT(mol), device='cuda')
+    def calc_sociability(self, synthon: Chem.Mol) -> float:
+        synthon_inchi = Chem.MolToInchi(synthon)
+        if synthon_inchi in self.dejavu_synthons:
+            return self.dejavu_synthons[synthon_inchi]
+        if synthon is None:
+            return -1
+        AllChem.EmbedMolecule(synthon)
+        if Chem.Mol.GetNumHeavyAtoms(synthon) < 3 or Chem.Mol.GetNumConformers(synthon) == 0:
+            return -1
+        synthon_usrcat = torch.tensor(rdMolDescriptors.GetUSRCAT(synthon), device='cuda')
         sociability = calc_summed_scores(synthon_usrcat, self.common_synthons_usrcats, self.common_synthons_tally).tolist()
-        self.dejavu_synthons[synthon] = sociability
+        self.dejavu_synthons[synthon_inchi] = sociability
         return sociability
     def calc_synthon_info(self, mol, verdict):
-        synthons = self.robodecomposer.decompose(mol)
+        synthons: List[Chem.Mol] = self.robodecomposer.decompose(mol)
         verdict['N_synthons'] = len(synthons)
         verdict['synthon_sociability'] = sum(
             [self.calc_sociability(synthon) for synthon in synthons])

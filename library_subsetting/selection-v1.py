@@ -1,4 +1,6 @@
 """
+> This script is deprecated. Use first_selection-v2.py instead.
+
 This script is used to filter a large file of CXSMILES strings
 to only include those that are sociable to the RoboDecomposer+Classifier pipeline.
 

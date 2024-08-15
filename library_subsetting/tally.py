@@ -18,6 +18,7 @@ from rdkit import Chem
 from rdkit import RDLogger
 from rdkit.Chem import AllChem, rdMolDescriptors
 from scipy import stats
+import operator
 
 RDLogger.DisableLog('rdApp.*')
 
@@ -26,19 +27,19 @@ classifier = Classifier()
 
 def read_library(filename, header_info: Optional[dict]=None) -> pd.DataFrame:
     with bz2.open(filename, 'rt') as bfh:
-        header = next(bfh).strip().split('\t')
+        headers = next(bfh).strip().split('\t')
         content = bfh.read()
     if header_info is not None:
         pass
-    elif len(header) != len(Classifier.enamine_header_info):
+    elif len(headers) != len(Classifier.enamine_header_info):
         # the order ought to be the same... but just in case
-        header_info = {h: Classifier.enamine_header_info.get(h, str) for h in header.strip().split()}
+        header_info = {h: Classifier.enamine_header_info.get(h, str) for h in headers}
     else:
         header_info = Classifier.enamine_header_info
     print(header_info)
     return Classifier.read_cxsmiles_block(content, header_info=header_info)
 
-import operator
+
 
 def count_synthons(df: pd.DataFrame) -> Dict[InchiType, int]:
     """
@@ -103,6 +104,23 @@ def calculate_amicability(tally: Dict[InchiType, float], n_compounds: int) -> pd
     synthons['nor_weighted_USRCAT0.7'] = synthons['weighted_USRCAT0.7'] / n_compounds
     return synthons
 
+def get_alpha(array: np.array):
+    unique, counts = np.unique(array, return_counts=True)
+    # unique and counts as the same shape as these arent np.histogram edges
+    # deal with shift:
+    xmin = min(unique)
+    filtered_counts = counts[unique >= xmin]
+    filtered_unique = unique[unique >= xmin]
+    # space out vector:
+    start = filtered_unique.min()
+    stop = filtered_unique.max()
+    new_vector = np.arange(start, stop + 1)
+    new_counts_vector = np.zeros(new_vector.shape, dtype=int)
+    new_counts_vector[filtered_unique - start] = filtered_counts
+    # go!
+    alpha, _, _ = stats.powerlaw.fit(new_counts_vector, method="MLE")
+    return alpha
+
 # ========================================
 def main(filename: str):
     tick = time.time()
@@ -127,22 +145,13 @@ def main(filename: str):
     add_mol(synthons)  # add `mol` columns (3D embeds the molecules)
     synthons['USRCAT'] = synthons.mol.apply(get_usrcat)
     synthons.to_pickle(f'{Path(filename).stem}_synthons.pkl.gz')
+    print('written file', f'{Path(filename).stem}_synthons.pkl.gz')
     tock = time.time()
     print('Elapsed time:', tock-tick)
     # ----------------------------------------
     # ## Stats
     # use integer to make automatic binning easier/smoother
-    a = synthons['counts'].values.astype(int)
-    unique, counts = np.unique(a, return_counts=True)
-    xmin = min(unique)  # deal with shift
-    filtered_counts = counts[unique >= xmin]
-    filtered_unique = unique[unique >= xmin]
-    start = filtered_unique.min()
-    stop = filtered_unique.max()
-    new_vector = np.arange(start, stop + 1)
-    new_counts_vector = np.zeros(new_vector.shape, dtype=int)
-    new_counts_vector[filtered_unique - start] = filtered_counts
-    alpha, _, _ = stats.powerlaw.fit(new_counts_vector, method="MLE")
+    alpha = get_alpha(synthons['counts'].values.astype(int))
     print('Alpha: ', alpha)
     tock = time.time()
     print('Elapsed time:', tock-tick)

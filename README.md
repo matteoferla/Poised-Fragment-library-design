@@ -144,9 +144,51 @@ As the most common synthons lack rings. It should be enforced that they have at 
 For 1M subset, there are ~60k synthons. ~30% are singletons. 7% are doublets. 1% appear 5+ times.
 1k is a nice number and is 10+ times with rings in the 1M subset.
 
-### Second pass synthon amicabilty
+### Second pass synthon sociability
 
 With a Cuda implementation of USRScore it takes ~0.6 ms to get the USRCATScores for 1k synthons.
+Consequently, the most common synthons in give subsets were found and used as a reference set.
+One issue is that the datasets have different powerlaw like distributions.
+
+Number of compounds per synthon from a 1M randomly drawn subset (or full 0.5M for LC):
+
+| dataset            |   count |   mean |   std |   min |   25% |   50% |   75% |   max |   ≥10 |          α |
+|:-------------------|--------:|-------:|------:|------:|------:|------:|------:|------:|------:|-----------:|
+| Enamine_REAL       |   60193 |      1 |     3 |     1 |     1 |     1 |     2 |   288 |  1092 |     0.0020 |
+| Enamine_REAL_small |   58871 |     19 |    53 |     2 |     4 |     8 |    19 |  4250 | 27053 |     0.0016 |
+| Mcule              |  230167 |      5 |   141 |     1 |     1 |     1 |     1 | 41466 |  8957 |     0.0014 |
+| LifeChemicals      |  142480 |      7 |   114 |     1 |     1 |     1 |     1 | 22057 |  6990 |     0.0014 |
+
+LC was added as it represents a vendor that specialises in fun building-blocks,
+making it a good reference for MCule. 
+
+![distro](images/distro-synthons.png)
+
+For all datasets the most common synthons are the same (benzene derivatives).
+Enamine REAL has a broader reaction repertoire than the one in the decomposing algorithm
+but has a smaller stock of building blocks than say MCule. As a result the powerlaw is 'wonky'.
+The 1k synthons with 10+ derivatives in a 1 M subset, will have 63k+ derivatives in the full 6B Enamine REAL.
+The subset of the Enamine REAL database in the HAC 11-21 range (666M) is curious as it profoundly different than the full dataset.
+
+
+
+### Boringness index
+One issue is that the most sociable compounds are the most boring, causing a rise in benzenes. 
+![img.png](images/phenyl.png)
+
+To counter this, a filter was added that the compound must have a negative 'boringness' score,
+defined as:
+
+* +1 for each aromatic carbocycle
+* +1/4 for each methylene group
+* -1 for each bridged, spiro, fused and/or alicylic ring (stacks)
+* -1/2 for each heterocycle
+
+The PMI are not factor in even if rod-like compounds dominate Enamine REAL,
+this is because the subset of Enamine+ MCule will be used by the FragmentKnitwork algorithm,
+so will do only two-way fragment mergers.
+
+![img.png](images/boringness.png)
 
 ## Other
 
