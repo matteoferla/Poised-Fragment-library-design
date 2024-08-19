@@ -30,13 +30,28 @@ class RoboDecomposer:
 
     """
 
-    def __init__(self, simplify_halide=True, amide=True, sulfonamide=True, biaryl=True, arylamine=False, ether=False):
+    def __init__(self,
+                 simplify_halide=True,  # not a real reaction, but a simplification
+                 amide=True,  #HATU + Schotten-Baumann
+                 sulfonamide=True,  # sulfonamide Schotten–Baumann
+                 biaryl=True,  # Suzuki
+                 arylamine=False,  # Chan-Lam
+                 ether=False,  # Williamson
+                 alkyne=False,  # Sonogashira
+                 amine=False,  # Borch
+                 triazole=False,  # Huisgen
+                 ureido=False,  # isocyanate
+                 ):
         # order matter as they will be run in that way
         self.rxns: Dict[str, AllChem.ChemicalReaction] = {}
+        # =========================================================
+        # ## simplification
         if simplify_halide:
             # not a real reaction, but a simplification
             simplification_rxn = AllChem.ReactionFromSmarts('[Cl,Br,I:1]>>[Cl:1]')
             self.rxns['halo-simplification'] = simplification_rxn
+        # =========================================================
+        # ## HATU & Schotten-Baumann
         if amide:
             # secondary exocyclic amides only:
             # Does not break lactams
@@ -49,32 +64,59 @@ class RoboDecomposer:
             aromatic_amide_hydrolysis_rxn = AllChem.ReactionFromSmarts(
                 '[n:1]-[C!R:2](=[O:3])-[!N:4]>>[nH:1].[Cl][C:2](=[O:3])-[*:4]')
             self.rxns['aryl-amide'] = aromatic_amide_hydrolysis_rxn
+        # =========================================================
+        # ## Schotten-Baumann
         if sulfonamide:
             # sulfonamide
-            # Meloxicam and saccharin are safe
             sulfonamide_cleavage_rxn = AllChem.ReactionFromSmarts(
                 '[N:1]-[S!R:2](=[O:3])(=[O:4])>>[N:1].[Cl]-[S:2](=[O:3])(=[O:4])')
             self.rxns['alkyl-sulfonamide'] = sulfonamide_cleavage_rxn
             aromatic_sulfonamide_cleavage_rxn = AllChem.ReactionFromSmarts(
                 '[n:1]-[S!R:2](=[O:3])(=[O:4])>>[nH:1].[Cl]-[S:2](=[O:3])(=[O:4])')
             self.rxns['aryl-sulfonamide'] = aromatic_sulfonamide_cleavage_rxn
-
-        # Suzuki
+        # =========================================================
+        # ## Suzuki
         if biaryl:
             biaryl_cleavage_rxn = AllChem.ReactionFromSmarts('[aR:1]-[aR:2]>>[aHR:1].[aHR:2]')
             self.rxns['biaryl'] = biaryl_cleavage_rxn
-
-        # Chan-Lam
+        # =========================================================
+        # ## Chan-Lam
         if arylamine:
             arylamine_cleavage_rxn = AllChem.ReactionFromSmarts('[aR:1]-[N:2]>>[aR:1]-B(-[OH])(-[OH]).[NH:2]')
-            self.rxns['teriary-arylamine'] = biaryl_cleavage_rxn
-
-        # Williamson
+            self.rxns['tertiary-arylamine'] = biaryl_cleavage_rxn
+        # =========================================================
+        # ##  Williamson
         if ether:
-            ether_cleavage_rxn = AllChem.ReactionFromSmarts('[CX4!R:1]-[N:2]>>[C!R:1](=O).[N:2]')  # fix me...
-            self.rxns['teriary-arylamine'] = ether_cleavage_rxn
+            ether_cleavage_rxn = AllChem.ReactionFromSmarts('[CX4!R:1]-[O!R:2]>>[C:1].[OH:2]')
+            self.rxns['ether'] = ether_cleavage_rxn
+            thioether_cleavage_rxn = AllChem.ReactionFromSmarts('[CX4!R:1]-[S!R:2]>>[C:1].[SH:2]')
+            self.rxns['thioether'] = thioether_cleavage_rxn
+        # =========================================================
+        # ##  Borch
+        # TODO check if the robot do reductive amination (Borch)?
+        if amine:
+            amine_cleavage_rxn = AllChem.ReactionFromSmarts('[C!R:1]-[N!R:2]>>[C:1].[N:2]')
+            self.rxns['amine'] = amine_cleavage_rxn
+        # =========================================================
+        # ##  Sonogashira
+        if alkyne:
+            alkyne_cleavage_rxn = AllChem.ReactionFromSmarts('[C!R:1]#[C:2]>>[C!R:1].[C:2]')
+            self.rxns['alkyne'] = alkyne_cleavage_rxn
+        # =========================================================
+        # ##  Huisgen
+        if triazole:
+            triazole_cleavage_rxn = AllChem.ReactionFromSmarts('[c:1]1:[c:2]:[n:3]:[n:4]:[nX3:5](-[C:6]):1>>[C:1]#[C:2].[N:3]#[N+:4]-[N-:5]-[C:6]')
+            self.rxns['triazole'] = triazole_cleavage_rxn
+        # =========================================================
+        # ##  Ureidation
+        if ureido:
+            # this expects a primary on one side...
+            # as the order matters, it does 2ndary first
+            ureido_cleavage_rxn = AllChem.ReactionFromSmarts('[NH0:1]-[C:2](=[O:3])-[N:4]>>[NH1:1].[C:2](=[O:3])-[N:4]')
+            self.rxns['ureido_2ary'] = ureido_cleavage_rxn
+            ureido_cleavage_rxn = AllChem.ReactionFromSmarts('[NH1!R:1]-[C:2](=[O:3])-[N:4]>>[NH2:1].[C:2](=[O:3])-[N:4]')
+            self.rxns['ureido_1ary'] = ureido_cleavage_rxn
 
-        # can the robot do reductive amination (Borch) —maybe?
 
         # etc.
         for rxn in self.rxns.values():
@@ -193,15 +235,17 @@ class Classifier:
                       'secondary amine': 0.3,  # not sure we can do thiss
                       'substituted aza': 0.3,  # ditto
                       }
-    cutoffs = dict(min_hbonds=5,
-                   min_N_rings=1,
-                   min_synthon_sociability=0,  # let's see
-                   min_weighted_robogroups=3,  # median
-                   # max_rota_per_hbond=2,
-                   max_rota_per_da=0.021,  # discard lower quartile... that is how bad enamine is
+    cutoffs = dict(min_N_rings=1,
                    max_N_methylene=6,
                    max_N_protection_groups=0,
-                   max_largest_ring_size=8, )
+                   max_largest_ring_size=8,
+                   # these are optional effectively
+                   min_hbonds_per_HAC=1 / 5,
+                   max_rota_per_HAC=1 / 5,
+                   min_synthon_sociability_per_HAC=0.354839,
+                   min_weighted_robogroups_per_HAC=0.0838,
+                   max_boringness=0.1,
+                   )
 
     # PAINS
     pains_catalog = FilterCatalog(_params)
@@ -232,8 +276,9 @@ class Classifier:
             self.calc_boringness(mol, verdict)
             self.assess(verdict)
             self.assess_mol_patterns(mol, verdict)
-            self.calc_synthon_info(mol, verdict)
             self.calc_robogroups(mol, verdict)
+            self.assess(verdict)
+            self.calc_synthon_info(mol, verdict)
             self.assess(verdict)
         except BadCompound as e:
             verdict['issue'] = str(e)
@@ -246,8 +291,10 @@ class Classifier:
             return verdict
 
     def calc_row_info(self, row: pd.Series, verdict: dict):
-        verdict['N_hbonds'] = row.HBonds
+        verdict['hbonds'] = row.HBonds
+        verdict['hbonds_per_HAC'] = row.HBonds / row.HAC
         verdict['rota_per_da'] = row.Rotatable_Bonds / row.MW
+        verdict['rota_per_HAC'] = row.Rotatable_Bonds / row.HAC
 
     def assess(self, verdict: dict):
         for key in self.cutoffs:
@@ -283,6 +330,7 @@ class Classifier:
         # the sum (not rare synthon penalised by roots)
         verdict['synthon_sociability'] = sum(
             [self.sociability.get(Chem.MolToInchi(synthon), -0.) for synthon in synthons])
+        verdict['synthon_sociability_per_HAC'] = verdict['synthon_sociability'] / mol.GetNumHeavyAtoms()
 
     def calc_robogroups(self, mol: Chem.Mol, verdict: dict):
         # ## Scoring wanted groups
@@ -290,6 +338,8 @@ class Classifier:
         for name, pattern in self.wanted.items():
             verdict[f'N_{name}'] = len(Chem.Mol.GetSubstructMatches(mol, pattern))
             verdict[f'weighted_robogroups'] += verdict[f'N_{name}'] * self.wanted_weights[name]
+        verdict[f'weighted_robogroups_per_HAC'] = verdict[f'weighted_robogroups'] / mol.GetNumHeavyAtoms()
+
 
     def calc_boringness(self, mol: Chem.Mol, verdict: dict):
         """

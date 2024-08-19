@@ -71,20 +71,30 @@ There are two ways to subset the vendor catalogue space:
 
 Due to the urgency, the latter has to be done.
 
+> NB. The first version was not good ([selection_v1.py](library_subsetting/selection_v1.py)), so see version 2 ([selection_v2.py](library_subsetting/selection_v2.py)).
+> These rely on [library_classification.py](library_subsetting/library_classification.py) and [library_classification_torch.py](library_subsetting/library_classification_torch.py), where the latter inherits the former.
+
 This requires the following steps:
 
 * **Decomposition**. Decompose the compounds into synthons that can be combined via the robot's restricted reaction repertoire,
 * **Amicability**. Assign a metric that approximates how 'amicable' the compounds are
 
-The first is done by the class `RoboDecomposer`.
-The reactions had to be written from scratch to avoid problems with lactams and sulfams.
+The first is done by the class `RoboDecomposer` (declared in the constructor method).
+The reactions had to be written from scratch to avoid problems with lactams and sulfams
+(i.e. whereas intramolecular reactions are fine, decomposing them as separate molecules is not, 
+for example penicillin G (lactam) and meloxicam (sulfams) are safe, biotin and saccharin twice as so as ureido is okay).
+Usage: `synthons = RoboDecomposer.decompose(mol)`. See code for reaction patterns.
+
 This reverses the following bonds:
 
-* _Amides_: fully exocyclic, or exocyclic carbonyls with alicylic nitrogen, secondary or tertiary amides,
-    avoids ureido and lactam.
+* _Amides_: fully exocyclic, or exocyclic carbonyls with alicylic or aromatic nitrogen, secondary or tertiary amides,
+    avoids ureido (cf. isocyanate ureidation) and lactam.
     This results in aryl-chloride and amine.
-    For simplicity this lumps together amidation and Schotten-Baumann reaction (cf. tertiary amides).
-    The Buckwald-Hartwig amination is not included, hence the lack of aryl nitrogens.
+    For simplicity this lumps together a few reaction
+    (EDC amidation -> primary amines only,
+    HATU amidation -> primary, secondary amines and aromatic aza (TBC),
+    Schotten-Baumann reaction -> arylhalide not carboxylic acid,
+    Buckwald-Hartwig amination -> inc. aromatic aza).
 * _Sulfonamides_: fully exocyclic, or exocyclic carbonyls, secondary or tertiary sulfonamides.
     Avoids sulfams.
     This results in sulfonyl chloride and amine. This is sulfo Schotten-Baumann reaction product.
@@ -92,10 +102,22 @@ This reverses the following bonds:
     This results in two aryl halides (for simplicity: one would be a boronic acid/ester).
     This is the Suzuki–Miyaura reaction product.
 
+A few other 'backwards' reactions were written for test purposes but not enabled as I do not believe the robot can do them.
+Williamson (ether/thioether, flag: ether, but does both ether and thioether), 
+Ureidation (flag: urea),
+Chan-Lam (flag: arylamine),
+Sonogashira (alkyne flag),
+Huisgen (triazole flag),
+Borch (amine flag).
+Ugi, Buchwald-Hartwig etc. were not written but have been mentioned in the past.
+A big caveat is that in reality the compounds are based on the building blocks and
+not all possible versions are possible,
+for example Schotten-Baumann reaction vs EDC amidation require different building blocks (aryl-halide vs caboxylic acid),
+or ureidation requires one synthon to have an isocyanate and the other an amine,
+which is indistinguishable if neither nitrogen is tertiary.
+
 Additionally, for simplicity, all halogens are collapsed into chloride.
 Whereas they have different properties, they are a good way to reduce unneeded diversity.
-
-Other reactions, such as Buckwald-Hartwig amination, Sonogashira coupling, Buch reductive amination, Williamson ether synthesis, Ugi reaction, Chan-Lam coupling etc. are not included.
 As a results the distribution of synthons heavy atom count is positively skewed.
 
 ### First pass synthon amicabilty

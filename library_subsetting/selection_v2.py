@@ -5,7 +5,16 @@ to only include those that are sociable to the RoboDecomposer+Classifier pipelin
 The huge bz2 import file is read in chunks of 100,000 lines and processed in parallel.
 Temporarily,  bz2 files with the filtered chunks will be written to /tmp/output/.
 The output is written to a bz2 file with the same name as the input file, but with 'selection_' prepended.
+
+seen-synthons.jsonl and seen-synthons_extra.jsonl are inchi caches.
+
+Version 2 does URSCAT score on torch, cf
+
 """
+
+prior_seen_synthons = 'seen-synthons.jsonl'
+newly_seen_synthons = 'seen-synthons_extra.jsonl'
+summary_cache       = 'results-backup.jsonl'
 
 import bz2
 import itertools
@@ -17,7 +26,7 @@ from pathlib import Path
 
 import pandas as pd
 from library_classification import RoboDecomposer, InchiType
-from torch_usrcat import GPUClassifier
+from library_classification_torch import GPUClassifier
 from pebble import ProcessPool
 from rdkit import RDLogger
 from typing import List, Dict
@@ -38,7 +47,13 @@ def read_jsonl(filename):
     if not os.path.exists(filename):
         return []
     with open(filename) as fh:
-        return [json.loads(line) for line in fh]
+        data = []
+        for line in fh:
+            try:
+                data.append(json.loads(line))
+            except json.JSONDecodeError as error:
+                pass  # burnt line
+        return data
 
 def process_chunk(chunk: str, filename: str, i: int, headers: List[str],
                   common_synthons_tally,
@@ -50,15 +65,17 @@ def process_chunk(chunk: str, filename: str, i: int, headers: List[str],
     # header_info is based off headers, but modified a bit
     df = GPUClassifier.read_cxsmiles_block('\n'.join(chunk), header_info=GPUClassifier.enamine_header_info)
     dejavu: Dict[InchiType, int]
-    for dejavu in read_jsonl('results-backup.jsonl'):
+    for dejavu in read_jsonl(prior_seen_synthons):
+        classifier.dejavu_synthons.update(dejavu)
+    for dejavu in read_jsonl(newly_seen_synthons):
         classifier.dejavu_synthons.update(dejavu)
 
     verdicts = classifier.classify_df(df)
     Path(output_file).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
-        for key in ['N_synthons', 'synthon_sociability', 'weighted_robogroups']:
+        for key in ['N_synthons', 'synthon_sociability', 'weighted_robogroups', 'boringness']:
             df[key] = verdicts[key]
-        cols = ['SMILES', 'Identifier', 'synthon_sociability', 'N_synthons', 'weighted_robogroups']
+        cols = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'synthon_sociability', 'N_synthons', 'weighted_robogroups', 'boringness']
         txt = '\t'.join(map(str, cols)) + '\n'
         for idx, row in df.loc[verdicts.acceptable].iterrows():
             txt += '\t'.join([str(row[k]) for k in cols]) + '\n'
@@ -66,8 +83,8 @@ def process_chunk(chunk: str, filename: str, i: int, headers: List[str],
             fh.write(txt)
     info = {'filename': filename, 'output_filename': output_file, 'chunk_idx': i,
             **verdicts.issue.value_counts().to_dict()}
-    write_jsonl(info, 'results-backup.jsonl')
-    write_jsonl(classifier.dejavu_synthons, 'seen_synthons.jsonl')
+    write_jsonl(info, summary_cache)
+    write_jsonl(classifier.nuveau_dejavu_synthons, newly_seen_synthons)
 
     return info
 
@@ -146,9 +163,12 @@ class ParallelMaster:
 if __name__ == '__main__':
     # make sure all is in order
     RoboDecomposer().test()
-    chunk_size = 10_000
-    GPUClassifier.cutoffs['min_synthon_sociability'] = 100
-    GPUClassifier.cutoffs['min_weighted_robogroups'] = 2
+    chunk_size = 100_000
+
+    GPUClassifier.cutoffs['min_hbonds_per_HAC'] = 1 / 5  # quartile
+    GPUClassifier.cutoffs['max_rota_per_HAC'] = 1 / 5 # quartile (~.22)
+    GPUClassifier.cutoffs['min_synthon_sociability_per_HAC'] = 0.354839  # quartile
+    GPUClassifier.cutoffs['min_weighted_robogroups_per_HAC'] = 0.0838 # quartile
     GPUClassifier.cutoffs['max_boringness'] = 0
     print(GPUClassifier.cutoffs)
 
@@ -169,7 +189,7 @@ if __name__ == '__main__':
     # ## Combine the outputs
     n = 0
     with bz2.open(output_file, 'wt') as output_fh:
-        for path in Path('/tmp/output') / Path(filename).stem / 'filtered_chunk*.bz2':
+        for path in (Path('/tmp/output') / Path(filename).stem).glob('filtered_chunk*.bz2'):
             with bz2.open(path.as_posix(), 'rt') as input_fh:
                 if n > 0:
                     next(input_fh)  # skip header line
