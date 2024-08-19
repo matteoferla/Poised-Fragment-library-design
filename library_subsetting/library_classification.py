@@ -116,9 +116,10 @@ class RoboDecomposer:
             self.rxns['ureido_2ary'] = ureido_cleavage_rxn
             ureido_cleavage_rxn = AllChem.ReactionFromSmarts('[NH1!R:1]-[C:2](=[O:3])-[N:4]>>[NH2:1].[C:2](=[O:3])-[N:4]')
             self.rxns['ureido_1ary'] = ureido_cleavage_rxn
-
-
+        # =========================================================
         # etc.
+        # ...
+        # =========================================================
         for rxn in self.rxns.values():
             rxn.Initialize()
 
