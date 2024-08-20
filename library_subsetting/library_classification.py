@@ -198,7 +198,15 @@ class Classifier:
     * 'MW'
 
     Various filters are used (see ``cutoffs``) and unwanted groups are checked for.
-    Namely:
+    The method ``assess`` looks at the keys of in ``cutoffs``,
+    which are in the format max_ or min_ followed by the key in the ``verdict``.
+
+    NB. If there is no key in verdict that relative to a cutoff, nothing happens.
+    This is because the assessment is continuous.
+    A weird side effect is having to enforce 'max_N_protection_groups' = 0,
+    _i.e._ no protection groups.
+
+    Here are few examples of cutoffs:
 
     * `min_hbonds` - minimum number of HBonds
     * `min_synthon_sociability` - see below
@@ -206,7 +214,7 @@ class Classifier:
     * `max_rota_per_da` - stop overly long rotatable bonds
     * `max_N_methylene` - like above but specific for too many CH2
     * `max_N_protection_groups` - default = zero protection groups
-    * `max_largest_ring_size=8, )
+    * `max_largest_ring_size=8
 
     The classification stops if a violation is found (run `enable_analysis_mode` to disable cutoffs).
     The error BadCompound is raised if a violation is found, but is caught.

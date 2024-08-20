@@ -172,7 +172,8 @@ With a Cuda implementation of USRScore it takes ~0.6 ms to get the USRCATScores 
 Consequently, the most common synthons in give subsets were found and used as a reference set.
 One issue is that the datasets have different powerlaw like distributions.
 
-Number of compounds per synthon from a 1M randomly drawn subset (or full 0.5M for LC):
+Summary of the distribution of the number of compounds that are 0.7 USRCAT Score distance to a synthon
+from a 1M randomly drawn subset (or full 0.5M for LC):
 
 | dataset            |   count |   mean |   std |   min |   25% |   50% |   75% |   max |   ≥10 |          α |
 |:-------------------|--------:|-------:|------:|------:|------:|------:|------:|------:|------:|-----------:|
@@ -181,8 +182,8 @@ Number of compounds per synthon from a 1M randomly drawn subset (or full 0.5M fo
 | Mcule              |  230167 |      5 |   141 |     1 |     1 |     1 |     1 | 41466 |  8957 |     0.0014 |
 | LifeChemicals      |  142480 |      7 |   114 |     1 |     1 |     1 |     1 | 22057 |  6990 |     0.0014 |
 
-LC was added as it represents a vendor that specialises in fun building-blocks,
-making it a good reference for MCule. 
+LC was added as it represents a vendor that specialises in funky building-blocks,
+making it a good reference for what MCule has than Enamine lacks. 
 
 ![distro](images/distro-synthons.png)
 
@@ -191,6 +192,20 @@ Enamine REAL has a broader reaction repertoire than the one in the decomposing a
 but has a smaller stock of building blocks than say MCule. As a result the powerlaw is 'wonky'.
 The 1k synthons with 10+ derivatives in a 1 M subset, will have 63k+ derivatives in the full 6B Enamine REAL.
 The subset of the Enamine REAL database in the HAC 11-21 range (666M) is curious as it profoundly different than the full dataset.
+
+The dataset `common_synthons_SpikeIn.pkl.gz` contains 7,975 synthons (as Inchi to tally and USRCAT vector).
+These are synthons with 10+ 0.7 USRCAT Score distance compounds in the Enamine random subset,
+100+ in the Enamine REAL small subset, 120+ in the LifeChemicals subset,
+and 30+ in the Mcule subset. The 'tally' is a number normalised to the Enamine REAL subset.
+
+For a visual of a random subset of these see: [subset-of-common-synthons.png](images/subset-of-common-synthons.png)
+(Values are normalised: MCule tally of 10 is actually 30, hence the 0 counts)
+
+Synthons and whole compounds from the XChem libraries were spiked into the dataset,
+with an artificial weight of 100 to ensure compounds that were sociable with them prevailed.
+7975 synthons were used.
+
+For weights used see [properties-vs-HAC.md](properties-vs-HAC.md).
 
 
 
