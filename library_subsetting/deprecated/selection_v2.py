@@ -69,7 +69,7 @@ def process_chunk(chunk: str, filename: str, i: int, headers: List[str],
         classifier.dejavu_synthons.update(dejavu)
     for dejavu in read_jsonl(newly_seen_synthons):
         classifier.dejavu_synthons.update(dejavu)
-
+    # ## Process the chunk
     verdicts = classifier.classify_df(df)
     Path(output_file).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
@@ -81,11 +81,11 @@ def process_chunk(chunk: str, filename: str, i: int, headers: List[str],
             txt += '\t'.join([str(row[k]) for k in cols]) + '\n'
         with bz2.open(output_file, 'wt') as fh:
             fh.write(txt)
+    # ## wrap up
     info = {'filename': filename, 'output_filename': output_file, 'chunk_idx': i,
             **verdicts.issue.value_counts().to_dict()}
     write_jsonl(info, summary_cache)
     write_jsonl(classifier.nuveau_dejavu_synthons, newly_seen_synthons)
-
     return info
 
 

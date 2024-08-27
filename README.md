@@ -15,9 +15,10 @@ Requirements:
 ## Workflow
 
 ### Groundwork
-What has come before
 
-1. Analysis of historic data, expanding off [Carbery et al. 2022](https://pubs.acs.org/doi/10.1021/acs.jmedchem.2c01004).
+> See [DSiPoised analysis](DSiPoised_analysis/DSiPoised_analysis.md)
+
+What has come before: analysis of historic data, expanding off [Carbery et al. 2022](https://pubs.acs.org/doi/10.1021/acs.jmedchem.2c01004).
 
 ### Validation
 Given a library assess how much it fits our criteria
@@ -71,8 +72,8 @@ There are two ways to subset the vendor catalogue space:
 
 Due to the urgency, the latter has to be done.
 
-> NB. The first version was not good ([selection_v1.py](library_subsetting/selection_v1.py)), so see version 2 ([selection_v2.py](library_subsetting/selection_v2.py)).
-> These rely on [library_classification.py](library_subsetting/library_classification.py) and [library_classification_torch.py](library_subsetting/library_classification_torch.py), where the latter inherits the former.
+> NB. The first version was not good ([selection_v1.py](library_subsetting/deprecated/selection_v1.py)), so see version 2 ([selection_v2.py](library_subsetting/deprecated/selection_v2.py)).
+> These rely on [library_classification.py](library_subsetting/deprecated/library_classification.py) and [library_classification_torch.py](library_subsetting/deprecated/library_classification_torch.py), where the latter inherits the former.
 
 This requires the following steps:
 

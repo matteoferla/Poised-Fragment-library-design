@@ -3,8 +3,6 @@ This is a variant of ``amicability.py`` but stops at USRCAT.
 """
 
 import bz2
-import json
-import re
 import sys
 import time
 import functools
@@ -13,7 +11,7 @@ from pathlib import Path
 from typing import Dict, NewType, Optional
 import numpy as np
 import pandas as pd
-from library_classification import RoboDecomposer, Classifier
+from library_subsetting.deprecated.library_classification import RoboDecomposer, Classifier
 from rdkit import Chem
 from rdkit import RDLogger
 from rdkit.Chem import AllChem, rdMolDescriptors
