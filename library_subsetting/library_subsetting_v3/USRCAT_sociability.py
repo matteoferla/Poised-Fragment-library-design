@@ -1,3 +1,9 @@
+"""
+This submodule contains the functions to calculate the USR and CAT scores for the sociability of a molecule,
+using Torch tensors.
+As a result there are import safeguards.
+"""
+
 import torch
 
 def calc_usrscores(d1: torch.Tensor, d2_matrix: torch.Tensor) -> torch.Tensor:

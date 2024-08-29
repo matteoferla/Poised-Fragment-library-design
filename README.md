@@ -208,8 +208,6 @@ with an artificial weight of 100 to ensure compounds that were sociable with the
 
 For weights used see [properties-vs-HAC.md](properties-vs-HAC.md).
 
-
-
 ### Boringness index
 One issue is that the most sociable compounds are the most boring, causing a rise in benzenes. 
 ![img.png](images/phenyl.png)
@@ -227,6 +225,34 @@ this is because the subset of Enamine+ MCule will be used by the FragmentKnitwor
 so will do only two-way fragment mergers.
 
 ![img.png](images/boringness.png)
+## Third pass
+
+The synthetic sociability was premised that the end user was using USRCAT,
+this was a miscommunication. Instead, Pharm2D was used due to speed, with a Tversky similarity with weights 0.7 and 0.3.
+The assymetric score is great as I was worried that novel pharmacophoric pairing would be lost,
+however, the ever-changing settings is problematic. As a result, I should drop the sociability request,
+and instead maximise diversity.
+The restrictive reaction repertoire is a problem as it is not clear what is possible and causes a self-fullfilling prophecy,
+where only amidation is done.
+Therefore, the breath of reactions is expanded. However, the robot will be doing late stage functionalisations,
+primarily for coupling reactions. As discussed, blindly applying a set of ~200 curated SMARTS, is bad,
+as that is not how retrosynthesis works, and most reactions are not applicable late stage.
+However, there is no harm in getting inspirations that way!
+This is the frequency of the LSF coupling groups in a subset of the Enamine REAL database, using bespoke SMARTS.
+
+| group                | Frequency |
+|:---------------------|----------:|
+| alkyne               |       127 |
+| sulfonamide          |      25.5 |
+| biaryl               |      23.1 |
+| cycloaddition        |      18.4 |
+| ureido               |      11.4 |
+| alkene               |      10.1 |
+| pyrrolic_substituted |       4.2 |
+| ether                |       2.5 |
+| alkylarene           |         2 |
+| higher-amine         |       1.7 |
+| amide                |         1 |
 
 ## Other
 

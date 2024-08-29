@@ -1,0 +1,227 @@
+# ## Breaking down common coupling reactions into synthons
+# The reactions had to be written from scratch to avoid problems with lactams and sulfams
+# (i.e. whereas intramolecular reactions are fine, decomposing them as separate molecules is not,
+# for example penicillin G (lactam) and meloxicam (sulfams) should not be decomposed
+# likewise, a ureido is not an amide, so biotin and saccharin should not be touched both
+# as they have a ureido or sulfamide and are in a ring.
+
+# weights are ^0.5 of the freq of groups relative to amides
+
+generic-halogen:
+    smarts: '[Cl,Br,I:1]>>[Cl:1]'
+    weight: 0
+    group: none
+    valids: 'C[Cl]'
+    invalids: 'C[F]'
+
+# [C!R] -> exocyclic amides only
+# [!n&!N] -> no ureido
+# all these are okay with Schotten-Baumann or Chan-Lam,
+# but reagents for direct amidation differ
+amide-terminal:
+    smarts: '[NH2:1]-[C!R:2](=[O:3])-[!n&!N:4]>>[NH3:1].[C:2](=[O:3])-[*:4]'
+    weight: 1
+    group: amide
+    reaction: DCC or EDC etc.
+    valids: 'CC(=O)N'
+    invalids: 'CC(=O)O.CC(=O)NC'
+
+amide-alkyl-secondary-amide:
+    smarts: '[C:1]-[NH1:2]-[C!R:3](=[O:4])-[!n&!N:5]>>[C:1]-[NH2:2].[C:3](=[O:4])-[*:5]'
+    weight: 1
+    group: amide
+    reaction: DCC or EDC or DIC or CDI or HBTU or PyBOP or HATU
+    valids: 'CC(=O)NC'
+    invalids: 'C1NC(=O)CC1.CCN(C)C(=O)CC.CCNC(=O)NCC.O=C2c1ccccc1S(=O)(=O)N2'
+# C1NC(=O)CC1 = lactam
+# CCN(C)C(=O)CC = tertiary amide
+# O=C2c1ccccc1S(=O)(=O)N2 = saccharin
+
+amide-alkyl-tertiary-amide:
+    smarts: '[C:1]-[NH0:2](-[C:3])-[C!R:4](=[O:5])-[!n&!N:6]>>[C:1]-[NH1:2]-[C:3].[C:4](=[O:5])-[*:6]'
+    weight: 1
+    group: amide
+    reaction: CDI or HBTU or PyBOP or HATU
+    valids: 'CCN(C)C(=O)CC'
+
+# aka anilide
+amide-aryl-amide:
+    smarts: '[c:1]-[NH0:2]-[C!R:3](=[O:4])-[!n&!N:5]>>[c:1]-[NH1:2].[C:3](=[O:4])-[*:5]'
+    weight: 1
+    group: amide
+    reaction: HBTU or PyBOP or HATU
+
+# aka N-heteroaryl amide
+amide-aza-amide:
+    smarts: '[n:1]-[C!R:2](=[O:3])-[!N:4]>>[nH:1].[C:2](=[O:3])-[*:4]'
+    weight: 1
+    group: amide
+    reaction: HATU
+    valids: 'n1(cccc1)C(=O)CC'
+    invalids: 'O=C2c1ccccc1S(=O)(=O)N2'
+
+sulfonamide-alkyl:
+    smarts: '[N:1]-[S!R:2](=[O:3])(=[O:4])>>[N:1].[S:2](=[O:3])(=[O:4])'
+    weight: 5.046424
+    group: sulfonamide
+    reaction: sulfo-Schotten-Baumann
+    invalids: 'O=C2c1ccccc1S(=O)(=O)N2'
+
+sulfonamide-aza:
+    smarts: '[n:1]-[S!R:2](=[O:3])(=[O:4])>>[nH1:1].[S:2](=[O:3])(=[O:4])'
+    weight: 5.046424
+    group: sulfonamide
+    reaction: sulfo-Schotten-Baumann
+
+biaryl:
+    smarts: '[cR:1]-[cR:2]>>[cH1R:1].[cH1R:2]'
+    weight: 4.810702
+    group: biaryl
+    reaction: sp2-sp2 Suzuki etc
+    valids: 'c1(cccc1)-c1(ccccc1)'
+    invalids: 'n1(cccc1)-c1(ccccc1)'
+# issue of 3+ cata fused arene-cycloalkane-arene ring systems
+
+# do not break fused cycloalkane-arene ring systems
+alkyl-arene:
+    smarts: '[cR:1]-[C!R;!$(C=O):2]>>[cH1:1].[C:2]'
+    weight: 1.422584
+    group: alkylarene
+    reaction: sp2-sp3 Suzuki etc
+
+# on pyrrolic N, not pyridinic N as charge comes in for the latter
+# issue of 3+ cata fused arene-cycloalkane-arene ring systems
+aryl-aza:
+    smarts: '[n:1]-[c:2]>>[nH1:1].[c:2]'
+    weight: 2.043941
+    group: pyrrolic_substituted
+    reaction: Chan-Lam or Buckwald-Hartwig etc
+    valids: 'n1(cccc1)-c1(ccccc1)'
+
+alkyl-aza:
+    smarts: '[n:1]-[C:2]>>[nH1:1].[C:2]'
+    weight: 2.043941
+    group: pyrrolic_substituted
+    reaction: Chan-Lam or Buckwald-Hartwig etc
+
+secondary-amine-arene:
+    smarts: '[c:1]-[NH1!R:2]-[C;!$(C=O):3]>>[c:1].[NH2:2]-[C:3]'
+    weight: 1.307188
+    group: higher-amine
+    reaction: Boch or buckwald-hartwig or Chan-Lam
+
+# ambiguous cases, so both get an amine.
+secondary-amine-alkyl:
+    smarts: '[C;!$(C=O):1]-[NH1!R:2]-[C;!$(C=O):3]>>[C:1]-[NH2:2].[NH2]-[C:3]'
+    weight: 1.307188
+    group: higher-amine
+    reaction: Boch or buckwald-hartwig or Chan-Lam
+
+
+tertiary-amine-alkyl:
+    smarts: '[C;!$(C=O):1]-[N!R:2](-[C;!$(C=O):3])-[C;!$(C=O):4]>>[C:1]-[NH2:2].[NH2]-[C:3].[NH2]-[C:4]'
+    weight: 1.307188
+    group: higher-amine
+    reaction: Boch or buckwald-hartwig or Chan-Lam
+
+tertiary-amine-alkyl-arene:
+    smarts: '[c:1]-[N!R:2](-[C;!$(C=O):3])-[C;!$(C=O):4]>>[c:1]-[NH2:2].[NH2]-[C:3].[NH2]-[C:4]'
+    weight: 1.307188
+    group: higher-amine
+    reaction: Boch or buckwald-hartwig or Chan-Lam
+
+tertiary-amide:
+    smarts: '[C!R:1]-[N!R](-[C:2])-[C!R:3](=[O:4])-[!n&!N:5]>>[C:1].[C:2].[C:3](=[O:4])-[*:5]'
+    weight: 1.307188
+    group: amide
+    reaction: amidation followed by buckwald-hartwig
+
+tertiary-amide-arene:
+    smarts: '[C!R:1]-[N!R](-[c:2])-[C!R:3](=[O:4])-[!n&!N:5]>>[C:1].[cH1:2].[C:3](=[O:4])-[*:5]'
+    weight: 1.307188
+    group: amide
+    reaction: amidation followed by buckwald-hartwig
+
+cycloalkane-amine:
+    smarts: '[CR:1]-[NR:2](-[CR:3])-[C!R:4]>>[C:1]-[NH1:2]-[C:3].[C:4]'
+    weight: 1.307188
+    group: higher-amine
+    reaction: buckwald-hartwig or Chan-Lam
+
+
+ether:
+    smarts: '[CX4!R:1]-[O!R:2]>>[C:1].[OH:2]'
+    weight: 1.569971
+    group: ether
+    reaction: Williamson
+
+# SX2: thioethers but not sulfones
+thioether:
+    smarts: '[CX4!R:1]-[S!RX2:2]>>[C:1].[SH:2]'
+    weight: 1.569971
+    group: ether
+    reaction: Williamson
+
+arylalkyne:
+    smarts: '[c:1]-[C!R:2]#[C:3]>>[cH1:1].[C!R:2]#[C:3]'
+    weight: 11.267260
+    group: alkyne
+    reaction: Sonogashira or Castro–Stephens
+
+alkylalkyne:
+    smarts: '[C:1]#[C!R:2]-[C!R:3]#[C:4]>>[C:1]#[C!R:2].[C!R:3]#[C:4]'
+    weight: 11.267260
+    group: alkyne
+    reaction: Cadiot–Chodkiewicz or Glaser or Fritsch-Buttenberg-Wiechell
+
+triazole:
+    smarts: '[c:1]1:[c:2]:[n:3]:[n:4]:[nX3:5](-[C:6]):1>>[C:1]#[C:2].[N:3]#[N+:4]-[N-:5]-[C:6]'
+    weight: 4.288350
+    group: cycloaddition
+    reaction: Huisgen
+
+thiazole:
+    smarts: '[c:1]-[c:2]1[c:3][s:4][c:5][n:6]1>>[C:5](=[S:4])-[N:6].[c:1]-[C:2](=O)-[C:3]'
+    weight: 4.288350
+    group: cycloaddition
+    reaction: Hantzsch
+
+# technically a condensation
+Benzoxazole:
+    smarts: '[o,s:1]1[c:2](-[c:10])[n:3][c:4]2[c:5][c:6][c:7][c:8][c:9]12>>O=[C:2](-[c:10]).[N:3][c:4]2[c:5][c:6][c:7][c:8][c:9]2[*:1]'
+    weight: 4.288350
+    group: cycloaddition
+    reaction: Benzoxazole
+
+oxadiazole:
+    smarts: '[c:1]-[c:2]1[n:3][c:4](-[C:5])on1>>[c:1]-[C:2]#[N:3].[C:4]-[C:5]'
+    weight: 4.288350
+    group: cycloaddition
+    reaction: Oxadiazole
+
+ureido_2ary:
+    smarts: '[NH0:1]-[C:2](=[O:3])-[N:4]>>[NH1:1].[C:2](=[O:3])-[N:4]'
+    weight: 3.376309
+    group: ureido
+    reaction: Ureidation
+    valids: 'CCNC(=O)NCC'
+
+ureido_1ary:
+    smarts: '[NH1!R:1]-[C:2](=[O:3])-[N:4]>>[NH2:1].[C:2](=[O:3])-[N:4]'
+    weight: 3.376309
+    group: ureido
+    reaction: Ureidation
+
+arylalkene:
+    smarts: '[c:1]-[C!R:2]=[C!R:3]>>[cH1:1].[C:2]=[C:3]'
+    weight: 3.176177
+    group: alkene
+    reaction: Heck or Suzuki or Wittig
+
+alkylalkene:
+    smarts: '[C:1]-[C!R:2]=[C!R:3]>>[C:1].[C:2]=[C:3]'
+    weight: 3.176177
+    group: alkene
+    reaction: Heck or Wittig
+
+

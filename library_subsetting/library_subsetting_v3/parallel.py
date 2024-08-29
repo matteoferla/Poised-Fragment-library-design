@@ -17,31 +17,6 @@ try:
 except pd.errors.OptionError:
     pass # version is old
 
-
-
-def first_pass_process(chunk: str, filename: str, i: int, headers: List[str], out_filename_template: str, **kwargs):
-    output_file = out_filename_template.format(i=i)
-    classifier = CompoundSieve(mode=SieveMode.basic)
-    # header_info is based off headers, but modified a bit
-    df = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=GPUClassifier.enamine_header_info)
-    # ## Process the chunk
-    verdicts = classifier.classify_df(df)
-    Path(output_file).parent.mkdir(exist_ok=True, parents=True)
-    if sum(verdicts.acceptable):
-        for key in ['N_synthons', 'synthon_sociability', 'weighted_robogroups', 'boringness']:
-            df[key] = verdicts[key]
-        cols = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'synthon_sociability', 'N_synthons', 'weighted_robogroups', 'boringness']
-        txt = '\t'.join(map(str, cols)) + '\n'
-        for idx, row in df.loc[verdicts.acceptable].iterrows():
-            txt += '\t'.join([str(row[k]) for k in cols]) + '\n'
-        with bz2.open(output_file, 'wt') as fh:
-            fh.write(txt)
-    # ## wrap up
-    info = {'filename': filename, 'output_filename': output_file, 'chunk_idx': i,
-            **verdicts.issue.value_counts().to_dict()}
-    #write_jsonl(info, summary_cache)
-    return info
-
 class ParallelChunker:
     """
     The reason for this is to not overload the system with too many futures.

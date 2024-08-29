@@ -37,7 +37,7 @@ def sieve_chunk(chunk: List[str],
     verdicts = classifier.classify_df(df)
     Path(output_file).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
-        cols = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'synthon_sociability', 'N_synthons', 'weighted_robogroups', 'boringness']
+        cols = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'synthon_sociability', 'N_synthons', 'synthon_score', 'boringness']
         txt = '\t'.join(map(str, cols)) + '\n'
         for idx, row in df.loc[verdicts.acceptable].iterrows():
             txt += '\t'.join([str(row.get(k, 0.)) for k in cols]) + '\n'
