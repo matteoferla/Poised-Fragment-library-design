@@ -224,4 +224,11 @@ alkylalkene:
     group: alkene
     reaction: Heck or Wittig
 
+# this will not get applied normally as ester is part of the MedChemists disallowed list
+ester:
+    smarts: '[O:1]-[C!R:2](=[O:3])>>[O:1].[C:2](=[O:3])'
+    weight: 0
+    group: ester
+    reaction: esterification
+
 

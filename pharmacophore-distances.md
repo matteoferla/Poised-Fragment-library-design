@@ -43,7 +43,8 @@ This means that caution must be used with fragments.
 
 ## Ligity (PIP)
 
-An interesting variant come from using internal distances between pharmacophores.
+An interesting variant come from using distances between pharmacophores.
+In Pharm2D the distance is number of bonds (i.e. is structure based), while in Ligity it is a 3D distance.
 In this scenario a cube is made of 3-way binned distances.
 This has the issue that the similarity is effective binary with fragments,
 and amide greatly increases the similarity.

@@ -70,7 +70,7 @@ class CompoundSieve:
     """
 
     dps = rdDeprotect.GetDeprotections()
-    unwanted = {'carbamate': Chem.MolFromSmiles('NC(=O)O'),
+    unwanted = {'carbamate': Chem.MolFromSmiles('[N!R]C(=O)O'),
                 'exocyclic ester': Chem.MolFromSmarts('[C!R](=O)[OH0!R]'),
                 'exocyclic imine': Chem.MolFromSmarts('[C!R]=[N!R]'),
                 'alkane': Chem.MolFromSmarts('[CH2!R]-[CH2!R]-[CH2!R]-[CH2!R]'),
@@ -155,7 +155,10 @@ class CompoundSieve:
                 verdict['acceptable'] = True
                 return verdict
             # ## Mol based
-            mol = Chem.MolFromSmiles(row.SMILES)
+            if 'mol' not in row.index:
+                mol = Chem.MolFromSmiles(row.SMILES)
+            else:
+                mol = row.mol
             self.calc_mol_info(mol, verdict)
             self.assess(verdict)
             self.calc_boringness(mol, verdict)
@@ -205,7 +208,7 @@ class CompoundSieve:
         verdict['N_rings'] = rdMolDescriptors.CalcNumRings(mol)
         verdict['N_methylene'] = len(mol.GetSubstructMatches(Chem.MolFromSmarts('[CH2X4!R]')))
         verdict['N_ring_atoms'] = len(mol.GetSubstructMatches(Chem.MolFromSmarts('[R]')))
-        verdict['largest_ring_size'] = max(map(len, mol.GetRingInfo().AtomRings()))
+        verdict['largest_ring_size'] = max([0, *map(len, mol.GetRingInfo().AtomRings())])
         verdict['N_protection_groups'] = rdDeprotect.Deprotect(mol, deprotections=self.dps) \
             .GetIntProp('DEPROTECTION_COUNT')
 
@@ -297,9 +300,31 @@ class CompoundSieve:
         """
         for key in self.score_weights:
             if key not in verdict:
-                verdict[key] = verdict[key.replace('_per_HAC')] / verdict['HAC']
+                verdict[key] = verdict[key.replace('_per_HAC', '')] / verdict['HAC']
         verdict['combined_Zscore'] = sum([self.score_weights[k] * (verdict[k] - self.ref_means[k]) / self.ref_stds[k]
                                           for k in self.score_weights])
+
+    @staticmethod
+    def prep_df(df, smiles_col: str = 'SMILES', mol_col=None):
+        """
+        Fixes in place a dataframe to make it compatible with ``classify_df``
+        :param df:
+        :param smiles_col:
+        :param mol_col:
+        :return:
+        """
+        if smiles_col != 'SMILES':
+            df = df.rename(column={smiles_col: 'SMILES'}).copy()
+        if mol_col is None:
+            df['mol'] = df.SMILES.apply(Chem.MolFromSmiles)
+        elif mol_col != 'mol':
+            df = df.rename(column={mol_col: 'mol'}).copy()
+        else:
+            pass  # all good
+        df['HAC'] = df.mol.apply(Chem.Mol.GetNumHeavyAtoms)
+        df['HBonds'] = df.mol.apply(rdMolDescriptors.CalcNumHBD) + df.mol.apply(rdMolDescriptors.CalcNumHBD)
+        df['Rotatable_Bonds'] = df.mol.apply(rdMolDescriptors.CalcNumRotatableBonds)
+        df['MW'] = df.mol.apply(rdMolDescriptors.CalcExactMolWt)
 
     # ------------------------ DEPRECATED ------------------------
 
