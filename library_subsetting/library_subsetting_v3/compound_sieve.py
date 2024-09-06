@@ -3,14 +3,20 @@ __all__ = ['InchiType', 'BadCompound', 'SieveMode', 'CompoundSieve']
 import io
 import json
 import enum
-import itertools
+import itertools, functools
 from pathlib import Path
-from typing import List, Dict, Any, Optional, NewType, Union
+from typing import List, Dict, Any, Optional, NewType, Union, Callable, Tuple
 
+import numpy as np
+from scipy.stats import skewnorm, norm
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, AllChem, rdDeprotect
 from rdkit.Chem.rdfiltercatalog import FilterCatalogParams, FilterCatalog
+from rdkit.Chem import FilterCatalog
+
+from .pipiteur import Pipiteur, PIPType
+from . import data
 try:
     import torch
     from .USRCAT_sociability import calc_summed_scores
@@ -33,6 +39,50 @@ class SieveMode(enum.Enum):
     substructure = 1  # based on RDKit
     synthon_v2 = 2  # advanced, old v2.
     synthon_v3 = 3  # advanced, v3
+
+def ultranormalize(value: float,
+                   skew_loc: float=0,
+                   skew_scale: float=1,
+                   skew_shape:float=0,
+                   nor_bound: float=2,
+                   flip_sign: int=+1,
+                   nan_replacement=-np.inf) -> float:
+    """
+    Normalise a skewed value to a Zscore, smoothed clipped at the bounds.
+    Assuming it is a skew normal, unskew it by quantile transformation (by skewnormal CDF & probit mapping)
+    and then smooth clip it at the bounds (`tanh`).
+
+    :param value: the value to normalise
+    :param skew_loc: skew omega
+    :param skew_scale: skew xi
+    :param skew_shape: skew alpha
+    :param nor_bounds: normal bounds, i.e. µ = 0, σ = 1, not in skew distro
+    :param flip_sign: +1 or -1
+    :param nan_replacement:
+    :return:
+    """
+    if np.isnan(value):
+        return nan_replacement
+    elif np.isposinf(value):
+        return flip_sign * nor_bound
+    elif np.isneginf(value):
+        if np.isposinf(value):
+            return - flip_sign * nor_bound
+    else:
+        # unskew by quantile transformation (by skewnormal CDF & probit mapping)
+        # `skewnorm.cdf` does not have argument name for shape / alpha
+        quantile = skewnorm.cdf((value - skew_loc) / skew_scale, skew_shape, loc=0, scale=1)
+        qtrans = flip_sign * norm.ppf(quantile)
+        # smooth clip it at the bounds
+        asymptote = np.abs(1 / nor_bound)
+        return np.tanh(qtrans * asymptote) / asymptote
+
+
+def autopass_fun(value, bound):
+    if value == 0.:
+        return -bound
+    else:
+        return +bound
 
 class CompoundSieve:
     """
@@ -114,7 +164,8 @@ class CompoundSieve:
     def __init__(self,
                  mode: SieveMode = SieveMode.synthon_v3,
                  common_synthons_tally: Optional[Dict[InchiType, int]]=None,
-                 common_synthons_usrcats: Optional[Dict[InchiType, list]]=None):
+                 common_synthons_usrcats: Optional[Dict[InchiType, list]]=None,
+                 screening_filename: Optional[str]=None):
         self.mode = mode
         if self.mode == SieveMode.synthon_v2:
             assert common_synthons_tally is not None, 'common_synthons_tally must be provided'
@@ -125,7 +176,24 @@ class CompoundSieve:
             self.nuveau_dejavu_synthons: Dict[InchiType, int] = {}
             self.robodecomposer = RestrictiveDecomposer()
         elif self.mode == SieveMode.synthon_v3:
+            self.screening_catalog = self.get_screening_library_catalog(screening_filename)
             self.robodecomposer = RestrictiveDecomposer()
+            Pipiteur.fdef = data.read_MolChemicalFeatureFactory('Steph_features.fdef')
+            Pipiteur.wanted = sorted(['Donor',
+                                      'Acceptor',
+                                      'NegIonizable',
+                                      'PosIonizable',
+                                      'Aromatic',
+                                      'Aliphatic', ])
+            self.pipiteur = Pipiteur(order=3,
+                                min_d=2, max_d=8,
+                                resolution=0.5,
+                                )
+            # todo fix:
+            # in cumulative_pip dataset its a tuple of each type
+            # in unskew params its colon separated...
+            self.pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
+            self.likelihood_unskew_funs: Dict[str, Callable] = self._parse_unskew_funs( data.read_json('likelihood_skew_params.json') )
 
     def enable_analysis_mode(self):
         """
@@ -174,6 +242,7 @@ class CompoundSieve:
                 self.calc_synthon_info_old(mol, verdict)
                 self.assess(verdict)
             elif self.mode == SieveMode.synthon_v3:
+                self.calc_outtajail_score(mol, verdict)  # boost for matches to XChem screening library
                 self.calc_synthon_info(mol, verdict)
                 self.assess(verdict)
                 self.calc_score(mol, verdict)
@@ -267,7 +336,8 @@ class CompoundSieve:
                      'N_fused_rings_per_HAC': 0.2,
                      'N_aromatic_carbocylics_per_HAC': -0.2,
                      'N_heterocyclics_per_HAC': 0.1,
-                     'N_methylene_per_HAC': -0.05}
+                     'N_methylene_per_HAC': -0.05,
+                     'outtajail_score': +2.0 }
     # these are from Enamine 1M random sample w/o removals
     ref_means = {'synthon_score_per_HAC': 0.21526508936919203,
                  'hbonds_per_HAC': 0.24447480230871893,
@@ -304,17 +374,135 @@ class CompoundSieve:
         verdict['combined_Zscore'] = sum([self.score_weights[k] * (verdict[k] - self.ref_means[k]) / self.ref_stds[k]
                                           for k in self.score_weights])
 
+    def calc_outtajail_score(self, mol: Chem.Mol, verdict: dict):
+        """
+        The out-of-jail-card score is a shift of the Zscore to boost substructures of XChem screening library
+        It is the shifted number of atoms of the matched substructure:
+
+        * 0–4 HAC gets +0
+        * 5 HAC get +0.1
+        * 10 HAC gets +0.6
+        * 15 HAC gets +1.1
+        * 20 HAC gets +1.6
+
+        :param mol:
+        :param verdict:
+        :return:
+        """
+        med = 10.0
+        lower_HAC = 4.  # 5 is min
+        k = 1.
+        outtajail_value = max([0]+[int(match.GetDescription().split(':')[1]) for match in self.screening_catalog.GetMatches(mol)])
+        verdict['outtajail_value'] = outtajail_value
+        verdict['outtajail_score'] = (max(lower_HAC, 4)**k - lower_HAC**k) / med**k
+
+    @staticmethod
+    def _parse_unskew_funs(likelihood_skew_params):
+        """
+        Remove the skew from the log freq of pipi data
+        """
+        fundex = {}
+        for key in likelihood_skew_params:
+            upper_bound = likelihood_skew_params[key]['upper_bound']
+            if likelihood_skew_params[key]['autopass']:
+                fundex[key] = functools.partial(autopass_fun, bound=upper_bound)
+            else:
+                fundex[key] = functools.partial(ultranormalize,
+                                               skew_shape=likelihood_skew_params[key]['alpha'],
+                                               skew_loc=likelihood_skew_params[key]['loc'],
+                                               skew_scale=likelihood_skew_params[key]['scale'],
+                                               nan_replacement=-2,
+                                               nor_bound=2,
+                                               flip_sign=-1)
+
+    common_pip_trios = ['Acceptor:Acceptor:Acceptor',
+                          'Acceptor:Acceptor:Aromatic',
+                          'Acceptor:Acceptor:Donor',
+                          'Acceptor:Aromatic:Aromatic',
+                          'Acceptor:Aromatic:Donor',
+                          'Acceptor:Donor:Donor',
+                          'Aromatic:Aromatic:Aromatic',
+                          'Aromatic:Aromatic:Donor',
+                          'Aromatic:Donor:Donor',
+                          'Donor:Donor:Donor']
+    uncommon_pip_trios =  ['Acceptor:Acceptor:Aliphatic',
+                          'Acceptor:Acceptor:NegIonizable',
+                          'Acceptor:Acceptor:PosIonizable',
+                          'Acceptor:Aliphatic:Aliphatic',
+                          'Acceptor:Aliphatic:Aromatic',
+                          'Acceptor:Aliphatic:Donor',
+                          'Acceptor:Aliphatic:NegIonizable',
+                          'Acceptor:Aliphatic:PosIonizable',
+                          'Acceptor:Aromatic:NegIonizable',
+                          'Acceptor:Aromatic:PosIonizable',
+                          'Acceptor:Donor:NegIonizable',
+                          'Acceptor:Donor:PosIonizable',
+                          'Acceptor:NegIonizable:NegIonizable',
+                          'Acceptor:NegIonizable:PosIonizable',
+                          'Acceptor:PosIonizable:PosIonizable',
+                          'Aliphatic:Aliphatic:Aliphatic',
+                          'Aliphatic:Aliphatic:Aromatic',
+                          'Aliphatic:Aliphatic:Donor',
+                          'Aliphatic:Aliphatic:NegIonizable',
+                          'Aliphatic:Aliphatic:PosIonizable',
+                          'Aliphatic:Aromatic:Aromatic',
+                          'Aliphatic:Aromatic:Donor',
+                          'Aliphatic:Aromatic:NegIonizable',
+                          'Aliphatic:Aromatic:PosIonizable',
+                          'Aliphatic:Donor:Donor',
+                          'Aliphatic:Donor:NegIonizable',
+                          'Aliphatic:Donor:PosIonizable',
+                          'Aliphatic:NegIonizable:NegIonizable',
+                          'Aliphatic:NegIonizable:PosIonizable',
+                          'Aliphatic:PosIonizable:PosIonizable',
+                          'Aromatic:Aromatic:NegIonizable',
+                          'Aromatic:Aromatic:PosIonizable',
+                          'Aromatic:Donor:NegIonizable',
+                          'Aromatic:Donor:PosIonizable',
+                          'Aromatic:NegIonizable:NegIonizable',
+                          'Aromatic:NegIonizable:PosIonizable',
+                          'Aromatic:PosIonizable:PosIonizable',
+                          'Donor:Donor:NegIonizable',
+                          'Donor:Donor:PosIonizable',
+                          'Donor:NegIonizable:NegIonizable',
+                          'Donor:NegIonizable:PosIonizable',
+                          'Donor:PosIonizable:PosIonizable',
+                          'NegIonizable:NegIonizable:NegIonizable',
+                          'NegIonizable:NegIonizable:PosIonizable',
+                          'NegIonizable:PosIonizable:PosIonizable',
+                          'PosIonizable:PosIonizable:PosIonizable']
+    def calc_pip(self, mol: Chem.Mol, verdict: dict):
+        pipi: Dict[Tuple[str, str, str], np.array] = self.pipiteur(mol)
+        for k, m in pipi.items():
+            v = np.min(self.pip_freqs[k][np.where(m != 0)], initial=0)
+            joint_key = ':'.join(k)
+            verdict[f'pip_{joint_key}_rarest'] = v
+            verdict[f'pip_{joint_key}_rarest_normalised'] = self.likelihood_unskew_funs[joint_key](v)
+        pip_commons = np.array([verdict[f'pip_{k}_rarest'] for k in self.common_pip_trios])
+        pip_uncommons = np.array([verdict[f'pip_{k}_rarest'] for k in self.uncommon_pip_trios])
+        pips = np.concatenate([pip_commons, pip_uncommons])
+        verdict[f'pip_mean'] = np.mean(pips)
+        verdict[f'pip_common_mean'] = np.mean(pip_commons)
+        verdict[f'pip_uncommon_mean'] = np.mean(pip_uncommons)
+        # the values are zero centred. I want them min centred.
+        lower_bound = pips.min()
+        verdict[f'pip_rms'] = np.mean(np.power(pips - lower_bound, 2), axis=1)
+        verdict[f'pip_common_rms'] = np.mean(np.power(pip_commons - lower_bound, 2), axis=1)
+        verdict[f'pip_uncommon_rms'] = np.mean(np.power(pip_uncommons - lower_bound, 2), axis=1)
+
     @staticmethod
     def prep_df(df, smiles_col: str = 'SMILES', mol_col=None):
         """
         Fixes in place a dataframe to make it compatible with ``classify_df``
+
         :param df:
         :param smiles_col:
         :param mol_col:
         :return:
         """
+        df = df.copy()
         if smiles_col != 'SMILES':
-            df = df.rename(column={smiles_col: 'SMILES'}).copy()
+            df = df.rename(column={smiles_col: 'SMILES'})
         if mol_col is None:
             df['mol'] = df.SMILES.apply(Chem.MolFromSmiles)
         elif mol_col != 'mol':
@@ -325,6 +513,19 @@ class CompoundSieve:
         df['HBonds'] = df.mol.apply(rdMolDescriptors.CalcNumHBD) + df.mol.apply(rdMolDescriptors.CalcNumHBD)
         df['Rotatable_Bonds'] = df.mol.apply(rdMolDescriptors.CalcNumRotatableBonds)
         df['MW'] = df.mol.apply(rdMolDescriptors.CalcExactMolWt)
+        return df.copy()
+
+    @staticmethod
+    def get_screening_library_catalog(filename=None):
+        filename = filename or Path(__file__).parent / 'data' / 'screening_mols.smi'
+        with open(filename) as fh:
+            libsynthons = [Chem.MolFromSmiles(line.strip().split('\t')[0]) for line in fh]
+        catalog = FilterCatalog.FilterCatalog()
+        for i, refmol in enumerate(libsynthons):
+            sm = FilterCatalog.SmartsMatcher(refmol)
+            entry = FilterCatalog.FilterCatalogEntry(f'#{i}:{Chem.Mol.GetNumHeavyAtoms(refmol)}', sm)
+            catalog.AddEntry(entry)
+        return catalog
 
     # ------------------------ DEPRECATED ------------------------
 

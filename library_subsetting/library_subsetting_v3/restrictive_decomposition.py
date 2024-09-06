@@ -56,7 +56,7 @@ class RestrictiveDecomposer:
         """
         # ## read data
         if yaml_path is None:
-            yaml_path = Path(__file__).parent / 'decompositions.yaml'
+            yaml_path = Path(__file__).parent / 'data' / 'decompositions.yaml'
         with Path(yaml_path).open('r') as fh:
             data = yaml.safe_load(fh)
         # ## Parse data
