@@ -1,7 +1,7 @@
 import importlib.resources
 import pickle, gzip
 import json
-from typing import Optional
+from typing import Optional, Callable, Dict
 from pathlib import Path
 from rdkit.Chem import AllChem, RDConfig
 from ..util import ultranormalize, autopass_fun
@@ -30,7 +30,7 @@ def read_MolChemicalFeatureFactory(filename: Optional[str]=None) -> AllChem.MolC
         path = Path(__file__).parent / filename
     return AllChem.BuildFeatureFactory(path.as_posix())
 
-def parse_unskew_funs(filename='likelihood_skew_params.json'):
+def parse_unskew_funs(filename='likelihood_skew_params.json') -> Dict[str, Callable[[float], float]]:
     """
     Remove the skew from the log freq of pipi data
     """
@@ -48,3 +48,4 @@ def parse_unskew_funs(filename='likelihood_skew_params.json'):
                                            nan_replacement=-2,
                                            nor_bound=2,
                                            flip_sign=-1)
+    return fundex

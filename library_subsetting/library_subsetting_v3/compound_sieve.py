@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional, NewType, Union, Callable, Tuple
 
 import numpy as np
 import pandas as pd
-from rdkit import Chem
+from rdkit import Chem, rdBase
 from rdkit.Chem import rdMolDescriptors, AllChem, rdDeprotect
 from rdkit.Chem import FilterCatalog, rdfiltercatalog
 
@@ -113,15 +113,10 @@ class CompoundSieve:
                    max_boringness=0.1,
                    min_combined_Zscore=0. # above the arithmetic mean
                    )
+    exception_to_catch = (Exception,    )
 
     # PAINS
     pains_catalog = rdfiltercatalog.FilterCatalog(pains_catalogue_params)
-    # PIP freqs
-    # todo fix:
-    # in cumulative_pip dataset its a tuple of each type
-    # in unskew params its colon separated...
-    pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
-    likelihood_unskew_funs: Dict[str, Callable] = data.parse_unskew_funs('likelihood_skew_params.json')
 
     def __init__(self,
                  mode: SieveMode = SieveMode.synthon_v3,
@@ -151,6 +146,12 @@ class CompoundSieve:
                                 min_d=2, max_d=8,
                                 resolution=0.5,
                                 )
+            # PIP freqs
+            # todo fix:
+            # in cumulative_pip dataset its a tuple of each type
+            # in unskew params its colon separated...
+            self.pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
+            self.likelihood_unskew_funs: Dict[str, Callable] = data.parse_unskew_funs('likelihood_skew_params.json')
 
     def enable_analysis_mode(self):
         """
@@ -165,7 +166,8 @@ class CompoundSieve:
         :param df:
         :return:
         """
-        _verdicts: pd.Series = df.apply(self, axis=1)
+        with rdBase.BlockLogs():
+            _verdicts: pd.Series = df.apply(self, axis=1)
         verdicts: pd.DataFrame = pd.DataFrame(_verdicts.tolist(), index=_verdicts.index)
         print(f'{round(verdicts.acceptable.value_counts().to_dict().get(True, 0) / len(verdicts) * 100)}% accepted')
         return verdicts
@@ -203,14 +205,14 @@ class CompoundSieve:
                 self.calc_synthon_info(mol, verdict)
                 self.assess(verdict)
                 if Chem.Mol.GetNumConformers(mol) == 0:
-                    mol = AllChem.addHs(mol)
+                    mol = AllChem.AddHs(mol)
                     AllChem.EmbedMolecule(mol)
                 self.calc_pip(mol, verdict)
                 self.calc_score(mol, verdict)
         except BadCompound as e:
             verdict['issue'] = str(e)
             return verdict
-        except Exception as e:
+        except self.exception_to_catch as e:
             verdict['issue'] = f'Uncaught {e.__class__.__name__} exception: {e}'
             return verdict
         else:
@@ -448,7 +450,7 @@ class CompoundSieve:
         if mol_col is None:
             df['mol'] = df.SMILES.apply(Chem.MolFromSmiles)
         elif mol_col != 'mol':
-            df = df.rename(column={mol_col: 'mol'}).copy()
+            df = df.rename(columns={mol_col: 'mol'}).copy()
         else:
             pass  # all good
         df['HAC'] = df.mol.apply(Chem.Mol.GetNumHeavyAtoms)
