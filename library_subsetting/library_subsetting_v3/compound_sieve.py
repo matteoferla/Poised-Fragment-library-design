@@ -334,8 +334,9 @@ class CompoundSieve:
         for key in self.score_weights:
             if key not in verdict:
                 verdict[key] = verdict[key.replace('_per_HAC', '')] / verdict['HAC']
-        verdict['combined_Zscore'] = sum([self.score_weights[k] * (verdict[k] - self.ref_means[k]) / self.ref_stds[k]
-                                          for k in self.score_weights])
+        # only calc;ed for keys in score_weights
+        wzscorify = lambda k: self.score_weights[k] * (verdict[k] - self.ref_means.get(k, 0)) / self.ref_stds.get(k, 1)
+        verdict['combined_Zscore'] = sum([wzscorify(k) for k in self.score_weights]) / (len(self.score_weights) ** 0.5)
 
     def calc_outtajail_score(self, mol: Chem.Mol, verdict: dict):
         """
