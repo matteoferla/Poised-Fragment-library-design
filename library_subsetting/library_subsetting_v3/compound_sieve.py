@@ -30,8 +30,6 @@ InchiType = NewType('InchiType', str)
 # pains
 pains_catalogue_params = FilterCatalogParams()
 pains_catalogue_params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
-self.pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
-self.likelihood_unskew_funs: Dict[str, Callable] = self._parse_unskew_funs( data.read_json('likelihood_skew_params.json') )
 
 class BadCompound(Exception):
     pass
