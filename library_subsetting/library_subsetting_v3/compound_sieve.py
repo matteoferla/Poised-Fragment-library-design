@@ -430,9 +430,9 @@ class CompoundSieve:
         verdict[f'pip_uncommon_mean'] = np.mean(pip_uncommons)
         # the values are zero centred. I want them min centred.
         lower_bound = pips.min()
-        verdict[f'pip_rms'] = np.mean(np.power(pips - lower_bound, 2), axis=1)
-        verdict[f'pip_common_rms'] = np.mean(np.power(pip_commons - lower_bound, 2), axis=1)
-        verdict[f'pip_uncommon_rms'] = np.mean(np.power(pip_uncommons - lower_bound, 2), axis=1)
+        verdict[f'pip_rms'] = np.mean(np.power(pips - lower_bound, 2))
+        verdict[f'pip_common_rms'] = np.mean(np.power(pip_commons - lower_bound, 2))
+        verdict[f'pip_uncommon_rms'] = np.mean(np.power(pip_uncommons - lower_bound, 2))
 
     @staticmethod
     def prep_df(df, smiles_col: str = 'SMILES', mol_col=None):
