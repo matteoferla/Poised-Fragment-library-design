@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, NewType, Union, Callable, Tuple
 
 import numpy as np
-from scipy.stats import skewnorm, norm
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, AllChem, rdDeprotect
@@ -17,6 +16,7 @@ from rdkit.Chem import FilterCatalog
 
 from .pipiteur import Pipiteur, PIPType
 from . import data
+from .util import ultranormalize, autopass_fun
 try:
     import torch
     from .USRCAT_sociability import calc_summed_scores
@@ -28,8 +28,10 @@ from .restrictive_decomposition import RestrictiveDecomposer
 InchiType = NewType('InchiType', str)
 
 # pains
-_params = FilterCatalogParams()
-_params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+pains_catalogue_params = FilterCatalogParams()
+pains_catalogue_params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+self.pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
+self.likelihood_unskew_funs: Dict[str, Callable] = self._parse_unskew_funs( data.read_json('likelihood_skew_params.json') )
 
 class BadCompound(Exception):
     pass
@@ -39,50 +41,6 @@ class SieveMode(enum.Enum):
     substructure = 1  # based on RDKit
     synthon_v2 = 2  # advanced, old v2.
     synthon_v3 = 3  # advanced, v3
-
-def ultranormalize(value: float,
-                   skew_loc: float=0,
-                   skew_scale: float=1,
-                   skew_shape:float=0,
-                   nor_bound: float=2,
-                   flip_sign: int=+1,
-                   nan_replacement=-np.inf) -> float:
-    """
-    Normalise a skewed value to a Zscore, smoothed clipped at the bounds.
-    Assuming it is a skew normal, unskew it by quantile transformation (by skewnormal CDF & probit mapping)
-    and then smooth clip it at the bounds (`tanh`).
-
-    :param value: the value to normalise
-    :param skew_loc: skew omega
-    :param skew_scale: skew xi
-    :param skew_shape: skew alpha
-    :param nor_bounds: normal bounds, i.e. µ = 0, σ = 1, not in skew distro
-    :param flip_sign: +1 or -1
-    :param nan_replacement:
-    :return:
-    """
-    if np.isnan(value):
-        return nan_replacement
-    elif np.isposinf(value):
-        return flip_sign * nor_bound
-    elif np.isneginf(value):
-        if np.isposinf(value):
-            return - flip_sign * nor_bound
-    else:
-        # unskew by quantile transformation (by skewnormal CDF & probit mapping)
-        # `skewnorm.cdf` does not have argument name for shape / alpha
-        quantile = skewnorm.cdf((value - skew_loc) / skew_scale, skew_shape, loc=0, scale=1)
-        qtrans = flip_sign * norm.ppf(quantile)
-        # smooth clip it at the bounds
-        asymptote = np.abs(1 / nor_bound)
-        return np.tanh(qtrans * asymptote) / asymptote
-
-
-def autopass_fun(value, bound):
-    if value == 0.:
-        return -bound
-    else:
-        return +bound
 
 class CompoundSieve:
     """
@@ -159,7 +117,13 @@ class CompoundSieve:
                    )
 
     # PAINS
-    pains_catalog = FilterCatalog(_params)
+    pains_catalog = FilterCatalog(pains_catalogue_params)
+    # PIP freqs
+    # todo fix:
+    # in cumulative_pip dataset its a tuple of each type
+    # in unskew params its colon separated...
+    pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
+    likelihood_unskew_funs: Dict[str, Callable] = data.parse_unskew_funs('likelihood_skew_params.json')
 
     def __init__(self,
                  mode: SieveMode = SieveMode.synthon_v3,
@@ -189,11 +153,6 @@ class CompoundSieve:
                                 min_d=2, max_d=8,
                                 resolution=0.5,
                                 )
-            # todo fix:
-            # in cumulative_pip dataset its a tuple of each type
-            # in unskew params its colon separated...
-            self.pip_freqs: Dict[Tuple[str, str, str], np.array] = data.read_pickle('cumulative_pip_smooth_log.pkl.gz')
-            self.likelihood_unskew_funs: Dict[str, Callable] = self._parse_unskew_funs( data.read_json('likelihood_skew_params.json') )
 
     def enable_analysis_mode(self):
         """
@@ -395,25 +354,6 @@ class CompoundSieve:
         outtajail_value = max([0]+[int(match.GetDescription().split(':')[1]) for match in self.screening_catalog.GetMatches(mol)])
         verdict['outtajail_value'] = outtajail_value
         verdict['outtajail_score'] = (max(lower_HAC, 4)**k - lower_HAC**k) / med**k
-
-    @staticmethod
-    def _parse_unskew_funs(likelihood_skew_params):
-        """
-        Remove the skew from the log freq of pipi data
-        """
-        fundex = {}
-        for key in likelihood_skew_params:
-            upper_bound = likelihood_skew_params[key]['upper_bound']
-            if likelihood_skew_params[key]['autopass']:
-                fundex[key] = functools.partial(autopass_fun, bound=upper_bound)
-            else:
-                fundex[key] = functools.partial(ultranormalize,
-                                               skew_shape=likelihood_skew_params[key]['alpha'],
-                                               skew_loc=likelihood_skew_params[key]['loc'],
-                                               skew_scale=likelihood_skew_params[key]['scale'],
-                                               nan_replacement=-2,
-                                               nor_bound=2,
-                                               flip_sign=-1)
 
     common_pip_trios = ['Acceptor:Acceptor:Acceptor',
                           'Acceptor:Acceptor:Aromatic',
