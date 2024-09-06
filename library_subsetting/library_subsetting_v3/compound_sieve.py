@@ -11,8 +11,7 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors, AllChem, rdDeprotect
-from rdkit.Chem.rdfiltercatalog import FilterCatalogParams, FilterCatalog
-from rdkit.Chem import FilterCatalog
+from rdkit.Chem import FilterCatalog, rdfiltercatalog
 
 from .pipiteur import Pipiteur, PIPType
 from . import data
@@ -28,8 +27,8 @@ from .restrictive_decomposition import RestrictiveDecomposer
 InchiType = NewType('InchiType', str)
 
 # pains
-pains_catalogue_params = FilterCatalogParams()
-pains_catalogue_params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+pains_catalogue_params = rdfiltercatalog.FilterCatalogParams()
+pains_catalogue_params.AddCatalog(rdfiltercatalog.FilterCatalogParams.FilterCatalogs.PAINS)
 
 class BadCompound(Exception):
     pass
@@ -115,7 +114,7 @@ class CompoundSieve:
                    )
 
     # PAINS
-    pains_catalog = FilterCatalog(pains_catalogue_params)
+    pains_catalog = rdfiltercatalog.FilterCatalog(pains_catalogue_params)
     # PIP freqs
     # todo fix:
     # in cumulative_pip dataset its a tuple of each type
