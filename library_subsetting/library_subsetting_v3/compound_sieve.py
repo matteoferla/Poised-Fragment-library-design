@@ -75,11 +75,12 @@ class CompoundSieve:
     """
 
     dps = rdDeprotect.GetDeprotections()
-    unwanted = {'carbamate': Chem.MolFromSmiles('[N!R]C(=O)O'),
-                'exocyclic ester': Chem.MolFromSmarts('[C!R](=O)[OH0!R]'),
+    # this could be written as a FilterCatalog
+    unwanted = {'exocyclic carbamate': Chem.MolFromSmarts('[N!R]-C(=O)-O'),
+                'exocyclic ester': Chem.MolFromSmarts('[C!R](=O)-[OH0!R]'),
                 'exocyclic imine': Chem.MolFromSmarts('[C!R]=[N!R]'),
-                'alkane': Chem.MolFromSmarts('[CH2!R]-[CH2!R]-[CH2!R]-[CH2!R]'),
-                'hydrazine': Chem.MolFromSmarts('[N,n]-[N!R]'),
+                'exocyclic alkane': Chem.MolFromSmarts('[CH2!R]-[CH2!R]-[CH2!R]-[CH2!R]'),
+                'exocyclic hydrazine': Chem.MolFromSmarts('[N,n]-[N!R]'),
                 }
 
     # this is a partial repetition of the rxns in RoboDecomposer!
@@ -201,6 +202,10 @@ class CompoundSieve:
                 self.calc_outtajail_score(mol, verdict)  # boost for matches to XChem screening library
                 self.calc_synthon_info(mol, verdict)
                 self.assess(verdict)
+                if Chem.Mol.GetNumConformers(mol) == 0:
+                    mol = AllChem.addHs(mol)
+                    AllChem.EmbedMolecule(mol)
+                self.calc_pip(mol, verdict)
                 self.calc_score(mol, verdict)
         except BadCompound as e:
             verdict['issue'] = str(e)
