@@ -353,7 +353,7 @@ class CompoundSieve:
         :param verdict:
         :return:
         """
-        med = 10.0
+        med = 10.0  # HAC = denominator for score to the power of k
         lower_HAC = 4.  # 5 is min
         k = 1.
         outtajail_value = max([0]+[int(match.GetDescription().split(':')[1]) for match in self.screening_catalog.GetMatches(mol)])
@@ -423,8 +423,8 @@ class CompoundSieve:
             joint_key = ':'.join(k)
             verdict[f'pip_{joint_key}_rarest'] = v
             verdict[f'pip_{joint_key}_rarest_normalised'] = self.likelihood_unskew_funs[joint_key](v)
-        pip_commons = np.array([verdict[f'pip_{k}_rarest'] for k in self.common_pip_trios])
-        pip_uncommons = np.array([verdict[f'pip_{k}_rarest'] for k in self.uncommon_pip_trios])
+        pip_commons = np.array([verdict[f'pip_{k}_rarest_normalised'] for k in self.common_pip_trios])
+        pip_uncommons = np.array([verdict[f'pip_{k}_rarest_normalised'] for k in self.uncommon_pip_trios])
         pips = np.concatenate([pip_commons, pip_uncommons])
         verdict[f'pip_mean'] = np.mean(pips)
         verdict[f'pip_common_mean'] = np.mean(pip_commons)
