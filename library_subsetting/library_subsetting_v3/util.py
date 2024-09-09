@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from scipy.stats import skewnorm, norm
 import json, os
@@ -20,6 +21,21 @@ def read_jsonl(filename: str) -> Any:
             except json.JSONDecodeError as error:
                 pass  # burnt line
         return data
+
+def get_skewnorm_params(series: pd.Series, remove_zeros=False) -> dict:
+    mask = ~series.isna()
+    if remove_zeros:
+        mask = mask & (series != 0.)
+    series: pd.Series = series.loc[mask].copy()
+    # winsorise the infinites
+    finite_min = series.loc[series.abs() != np.inf].min()
+    finite_max = series.loc[series.abs() != np.inf].max()
+    series.loc[series == -np.inf] = finite_min
+    series.loc[series == +np.inf] = finite_max
+    raw: np.array = series.values
+    filtered = raw[np.abs(raw - np.mean(raw)) <= 3 * np.std(raw)]
+    alpha, loc, scale = skewnorm.fit(filtered)
+    return {'name': series.name, 'count': len(series), 'alpha': alpha, 'loc': loc, 'scale': scale}
 
 def ultranormalize(value: float,
                    skew_loc: float=0,

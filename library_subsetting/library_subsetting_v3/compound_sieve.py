@@ -72,6 +72,24 @@ class CompoundSieve:
 
     The classification stops if a violation is found (run `enable_analysis_mode` to disable cutoffs).
     The error BadCompound is raised if a violation is found, but is caught.
+
+    For diagnostics...
+
+    .. code-block:: python
+
+        sieve = CompoundSieve()
+        sieve.exception_to_catch = ()
+        sieve.cutoffs = {}
+        df = CompoundSieve.prep_df(df,smiles_col = 'SMILES', mol_col='mol')
+        sieve(df.iloc[0])
+
+    Due to the fact that each 'calc' method adds to the verdict,
+    to call one of these, one needs to pass the verdict dictionary.
+
+    .. code-block:: python
+
+        verdict = {}
+        sieve.calc_pip(mol, verdict)
     """
 
     dps = rdDeprotect.GetDeprotections()
@@ -110,9 +128,11 @@ class CompoundSieve:
                    max_rota_per_HAC=1 / 5,
                    min_synthon_sociability_per_HAC=0.354839,
                    min_synthon_score_per_HAC=0.138470, # v2 is 0.0838
-                   max_boringness=0.1,
+                   min_weighted_robogroups_per_HAC=0.0838,  # quartile
+                   max_boringness=0.,
                    min_combined_Zscore=0. # above the arithmetic mean
                    )
+
     exception_to_catch = (Exception,    )
 
     # PAINS
@@ -267,13 +287,13 @@ class CompoundSieve:
         verdict['N_alicyclics'] = rdMolDescriptors.CalcNumAliphaticRings(mol)
         verdict['N_fused_rings'] = self.calc_n_fused_rings(mol)
         verdict['N_heterocyclics'] = rdMolDescriptors.CalcNumHeterocycles(mol)
-        verdict['N_aromatic_carbocylics'] = rdMolDescriptors.CalcNumAromaticCarbocycles(mol)
+        verdict['N_aromatic_carbocycles'] = rdMolDescriptors.CalcNumAromaticCarbocycles(mol)
         # previously calculated: # not a methylene radical but a -CH2- group
         verdict['N_methylene'] = len(mol.GetSubstructMatches(Chem.MolFromSmarts('[CH2X4!R]')))
         # make an arbitrary score of coolness
         cool_keys = ['N_spiro', 'N_bridgehead', 'N_alicyclics', 'N_fused_rings']
         # halfcool_keys = ['N_heterocyclics']
-        boring_keys = ['N_aromatic_carbocylics']
+        boring_keys = ['N_aromatic_carbocycles']
         # boringish_keys = ['N_methylene']
         verdict['boringness'] = sum(map(verdict.get, boring_keys)) + \
                                 verdict['N_methylene'] / 4 - \
@@ -290,17 +310,20 @@ class CompoundSieve:
 
     # this is ad hoc
     score_weights = {'synthon_score_per_HAC': 1,
-                     'hbonds_per_HAC': 1,
-                     'rota_per_HAC': -1,
-                     'N_synthons_per_HAC': 1,
-                     'N_spiro_per_HAC': 0.2,
-                     'N_bridgehead_per_HAC': 0.2,
-                     'N_alicyclics_per_HAC': 0.2,
-                     'N_fused_rings_per_HAC': 0.2,
-                     'N_aromatic_carbocylics_per_HAC': -0.2,
-                     'N_heterocyclics_per_HAC': 0.1,
-                     'N_methylene_per_HAC': -0.05,
-                     'outtajail_score': +2.0 }
+                     'hbonds_per_HAC': 0.5,
+                     'rota_per_HAC': -0.5,
+                     #'N_synthons_per_HAC': 1,
+                     'N_spiro_per_HAC': 0.1,
+                     'N_bridgehead_per_HAC': 0.1,
+                     'N_alicyclics_per_HAC': 0.1,
+                     'N_fused_rings_per_HAC': 0.1,
+                     'N_aromatic_carbocycles_per_HAC': -0.1,
+                     'N_heterocyclics_per_HAC': 0.05,
+                     'N_methylene_per_HAC': -0.02,
+                     'outtajail_score': +2.0,
+                     'pip_common_rms': +1.0,
+                     'pip_common_rms': +0.5,
+                     }
     # these are from Enamine 1M random sample w/o removals
     ref_means = {'synthon_score_per_HAC': 0.21526508936919203,
                  'hbonds_per_HAC': 0.24447480230871893,
@@ -310,9 +333,14 @@ class CompoundSieve:
                  'N_bridgehead_per_HAC': 0.005046401318307808,
                  'N_alicyclics_per_HAC': 0.05905642932651799,
                  'N_fused_rings_per_HAC': 0.015589662661026338,
-                 'N_aromatic_carbocylics_per_HAC': 0.01918927338610745,
+                 'N_aromatic_carbocycles_per_HAC': 0.01918927338610745,
                  'N_heterocyclics_per_HAC': 0.06979145110309398,
-                 'N_methylene_per_HAC': 0.08125398462902535}
+                 'N_methylene_per_HAC': 0.08125398462902535,
+                 'pip_common_mean': -0.6916386218771066,
+                 'pip_uncommon_mean': -1.6803720478038888,
+                 'pip_common_rms': 3.0394492640351154,
+                 'pip_uncommon_rms': 0.733971015961427,
+                 }
     ref_stds = {'synthon_score_per_HAC': 0.1137501096872908,
                 'hbonds_per_HAC': 0.06981618332292346,
                 'rota_per_HAC': 0.07809299292460986,
@@ -321,9 +349,14 @@ class CompoundSieve:
                 'N_bridgehead_per_HAC': 0.020431219793333164,
                 'N_alicyclics_per_HAC': 0.0416689554316131,
                 'N_fused_rings_per_HAC': 0.028725197477523886,
-                'N_aromatic_carbocylics_per_HAC': 0.02464447282361974,
+                'N_aromatic_carbocycles_per_HAC': 0.02464447282361974,
                 'N_heterocyclics_per_HAC': 0.03760917968539562,
-                'N_methylene_per_HAC': 0.061085330799282266}
+                'N_methylene_per_HAC': 0.061085330799282266,
+                'pip_common_mean': 0.6568192777260955,
+                'pip_uncommon_mean': 0.26532635670645766,
+                'pip_common_rms': 2.143211511620346,
+                'pip_uncommon_rms': 0.7553837646990731,
+                }
 
     def calc_score(self, mol: Chem.Mol, verdict: dict):
         """
@@ -340,7 +373,7 @@ class CompoundSieve:
 
     def calc_outtajail_score(self, mol: Chem.Mol, verdict: dict):
         """
-        The out-of-jail-card score is a shift of the Zscore to boost substructures of XChem screening library
+        The out-of-jail-card score is a shift of the combined Zscore to boost substructures of XChem screening library
         It is the shifted number of atoms of the matched substructure:
 
         * 0–4 HAC gets +0
@@ -349,16 +382,16 @@ class CompoundSieve:
         * 15 HAC gets +1.1
         * 20 HAC gets +1.6
 
-        :param mol:
-        :param verdict:
-        :return:
+        The distribution of the max HAC of the matches is dominated by zeros,
+        while the non-zero values start at 5 due to the ring requirement for a match.
         """
         med = 10.0  # HAC = denominator for score to the power of k
         lower_HAC = 4.  # 5 is min
-        k = 1.
+        k = 1.  # exponent disabled
+        # this is the largest HAC match
         outtajail_value = max([0]+[int(match.GetDescription().split(':')[1]) for match in self.screening_catalog.GetMatches(mol)])
         verdict['outtajail_value'] = outtajail_value
-        verdict['outtajail_score'] = (max(lower_HAC, 4)**k - lower_HAC**k) / med**k
+        verdict['outtajail_score'] = (max(lower_HAC, outtajail_value)**k - lower_HAC**k) / med**k
 
     common_pip_trios = ['Acceptor:Acceptor:Acceptor',
                           'Acceptor:Acceptor:Aromatic',
