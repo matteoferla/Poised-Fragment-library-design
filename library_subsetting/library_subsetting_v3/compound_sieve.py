@@ -142,8 +142,10 @@ class CompoundSieve:
                  mode: SieveMode = SieveMode.synthon_v3,
                  common_synthons_tally: Optional[Dict[InchiType, int]]=None,
                  common_synthons_usrcats: Optional[Dict[InchiType, list]]=None,
-                 screening_filename: Optional[str]=None):
+                 screening_filename: Optional[str]=None,
+                 use_row_info: bool = True):
         self.mode = mode
+        self.use_row_info = use_row_info  # this should be false if the data is not available
         if self.mode == SieveMode.synthon_v2:
             assert common_synthons_tally is not None, 'common_synthons_tally must be provided'
             assert common_synthons_usrcats is not None, 'common_synthons_usrcats must be provided'
@@ -196,7 +198,8 @@ class CompoundSieve:
         verdict = {'acceptable': False, 'issue': ''}
         try:
             # ## Basic row info based
-            self.calc_row_info(row, verdict)
+            if self.use_row_info:
+                self.calc_row_info(row, verdict)
             self.assess(verdict)
             if self.mode == SieveMode.basic:
                 verdict['acceptable'] = True
@@ -258,6 +261,14 @@ class CompoundSieve:
 
     def calc_mol_info(self, mol: Chem.Mol, verdict: dict):
         # ## Mol based
+        if not self.use_row_info:
+            verdict['HAC'] = rdMolDescriptors.CalcNumHeavyAtoms(mol)
+            verdict['HBA'] = rdMolDescriptors.CalcNumHBA(mol)
+            verdict['HBD'] = rdMolDescriptors.CalcNumHBD(mol)
+            verdict['hbonds'] = verdict['HBA'] + verdict['HBD']
+            verdict['Rotatable_Bonds'] = rdMolDescriptors.CalcNumRotatableBonds(mol)
+            verdict['hbonds_per_HAC'] = verdict['hbonds'] / verdict['HAC']
+            verdict['rota_per_HAC'] = verdict['Rotatable_Bonds'] / verdict['HAC']
         verdict['N_rings'] = rdMolDescriptors.CalcNumRings(mol)
         verdict['N_methylene'] = len(mol.GetSubstructMatches(Chem.MolFromSmarts('[CH2X4!R]')))
         verdict['N_ring_atoms'] = len(mol.GetSubstructMatches(Chem.MolFromSmarts('[R]')))
@@ -473,7 +484,7 @@ class CompoundSieve:
         mol.SetProp('_Name', row['Identifier'])
         mol.SetProp('SMILES', row['SMILES'])
         for c in ['HAC', 'HBA', 'HBD', 'Rotatable_Bonds']:
-            mol.SetIntProp('HAC', int(row[c] if c in row.index else verdict[c]))
+            mol.SetIntProp('HAC', int(verdict[c] if c in verdict[c] else row[c]))
         for c in ('boringness', 'synthon_score', 'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore'):
             mol.SetDoubleProp(c, float(verdict[c]))
         tio = io.StringIO()
@@ -555,4 +566,3 @@ class CompoundSieve:
             verdict[f'N_{name}'] = len(Chem.Mol.GetSubstructMatches(mol, pattern))
             verdict[f'synthon_score'] += verdict[f'N_{name}'] * self.wanted_weights[name]
         verdict[f'synthon_score_per_HAC'] = verdict[f'synthon_score'] / verdict['HAC']
-

@@ -70,7 +70,7 @@ def sieve_chunk2sdf(chunk: List[str],
     :return:
     """
     output_files = {tier: out_filename_template.format(i=i, tier=tier) for tier in ['Z0-05', 'Z05-08', 'Z08-1', 'Z1']}
-    classifier = CompoundSieve(mode=SieveMode.synthon_v3)
+    classifier = CompoundSieve(mode=SieveMode.synthon_v3, use_row_info=False)
     # header_info is based off headers, but modified a bit
     df = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=DatasetConverter.enamine_header_info)
     # ## Process the chunk
