@@ -244,11 +244,11 @@ class CompoundSieve:
             return verdict
 
     def calc_row_info(self, row: pd.Series, verdict: dict):
-        verdict['hbonds'] = row.HBonds
-        verdict['HAC'] = row.HAC
-        verdict['hbonds_per_HAC'] = row.HBonds / row.HAC
-        verdict['rota_per_da'] = row.Rotatable_Bonds / row.MW
-        verdict['rota_per_HAC'] = row.Rotatable_Bonds / row.HAC
+        verdict['hbonds'] = int(row.HBonds)
+        verdict['HAC'] = int(row.HAC)
+        verdict['hbonds_per_HAC'] = int(row.HBonds) / int(row.HAC)
+        verdict['rota_per_da'] = int(row.Rotatable_Bonds) / row.MW
+        verdict['rota_per_HAC'] = int(row.Rotatable_Bonds) / int(row.HAC)
 
     def assess(self, verdict: dict):
         for key in self.cutoffs:
@@ -484,7 +484,7 @@ class CompoundSieve:
         mol.SetProp('_Name', row['Identifier'])
         mol.SetProp('SMILES', row['SMILES'])
         for c in ['HAC', 'HBA', 'HBD', 'Rotatable_Bonds']:
-            mol.SetIntProp('HAC', int(verdict[c] if c in verdict else row[c]))
+            mol.SetIntProp('HAC', int(verdict[c]))
         for c in ('boringness', 'synthon_score', 'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore'):
             mol.SetDoubleProp(c, float(verdict[c]))
         tio = io.StringIO()

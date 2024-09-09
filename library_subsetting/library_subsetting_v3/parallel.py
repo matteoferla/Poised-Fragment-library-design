@@ -50,6 +50,7 @@ class ParallelChunker:
             except self.exceptions_to_catch as e:
                 tb = '\n'.join(traceback.format_exception(e))
                 print(f"Processing failed: {e.__class__.__name__} {e}\n", tb)
+                self.results.append({'error': f'{e.__class__.__name__} {e}'})
 
     def wait(self):
         """

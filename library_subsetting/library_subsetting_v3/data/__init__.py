@@ -13,15 +13,15 @@ def read_data_file() -> str:
         return file.read()
 
 def read_json(filename: str) -> dict:
-    with open(filename, 'r') as fh:
+    with (Path('.') / filename).open('r') as fh:
         return json.load(fh)
 
 def read_pickle(filename: str) -> dict:
     if filename.endswith('.gz'):
-        with gzip.open(filename, 'rb') as gfh:
+        with gzip.open((Path(__file__).parent / filename), 'rb') as gfh:
             return pickle.load(gfh)
     else:
-        return pickle.load(open(filename, 'rb'))
+        return pickle.loads((Path(__file__).parent / filename).read_text())
 
 def read_MolChemicalFeatureFactory(filename: Optional[str]=None) -> AllChem.MolChemicalFeatureFactory:
     if filename is None:

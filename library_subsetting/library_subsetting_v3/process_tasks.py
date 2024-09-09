@@ -64,8 +64,7 @@ def sieve_chunk2sdf(chunk: List[str],
     :param filename: the original filename (for record keeping)
     :param i: chunk index (for record keeping and for ``filename_template.format(i=i)``)
     :param summary_cache:
-    :param out_filename_template: out filename with {i} placeholder
-    :param mode: ``SieveMode.basic``, ``SieveMode.substructure`` or ``SieveMode.synthon``
+    :param out_filename_template: out filename with {i} and {tier} placeholder
     :param kwargs: ParallelChunker may pass arguments that are not needed.
     :return:
     """
@@ -80,8 +79,8 @@ def sieve_chunk2sdf(chunk: List[str],
         # 'Z0-05', 'Z05-08', 'Z08-1', 'Z1'
         masks = {'Z0-05': (verdicts.combined_Zscore >= 0.) & (verdicts.combined_Zscore < 0.5),
                  'Z05-08': (verdicts.combined_Zscore >= 0.5) & (verdicts.combined_Zscore < 0.8),
-                    'Z08-1': (verdicts.combined_Zscore >= 0.8) & (verdicts.combined_Zscore < 1.),
-                    'Z1': (verdicts.combined_Zscore >= 1.)
+                  'Z08-1': (verdicts.combined_Zscore >= 0.8) & (verdicts.combined_Zscore < 1.),
+                  'Z1': (verdicts.combined_Zscore >= 1.)
                  }
         for tier, mask in masks.items():
             with bz2.open(output_files[tier], 'wt') as fh:

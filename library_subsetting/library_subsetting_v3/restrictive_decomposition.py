@@ -94,6 +94,8 @@ class RestrictiveDecomposer:
                     done_rxn_names.append(rxn_details.name)
                     prod.SetProp('Reaction', ' '.join(done_rxn_names))
                 return subprods
+        except KeyboardInterrupt as error:
+            raise error
         except Exception as error:
             pass
         return [mol]
@@ -149,6 +151,6 @@ class RestrictiveDecomposer:
                 display(mol)
                 display( Draw.MolsToGridImage(synthons, legends=[s.GetProp('Reaction') for s in synthons]) )
             results.append(dict(name=name, input=mol, output=synthons, expected_products=smi[1]))
-        return results
+            return results
 
 
