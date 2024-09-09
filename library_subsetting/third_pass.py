@@ -7,11 +7,10 @@ from pathlib import Path
 import sys, os, shutil
 
 WORKINGDIR = '/opt/xchem-fragalysis-2/mferla/library_making'
-
+os.chdir(WORKINGDIR)
 sys.path.append(f'{WORKINGDIR}/repo/library_subsetting')
 
 from library_subsetting_v3 import ParallelChunker, CompoundSieve, SieveMode, DatasetConverter, sieve_chunk2sdf
-
 
 path = Path(sys.argv[1])
 assert path.exists(), f'{path} does not exists'
@@ -20,7 +19,7 @@ master = ParallelChunker(chunk_size = 100_000, task_func=sieve_chunk2sdf)
 out_filename_template=f'/tmp/third_pass/{path.stem}_{{tier}}_chunk{{i}}.bz2'
 df = master.process_file(filename=path.as_posix(),
                          out_filename_template=out_filename_template,
-                        summary_cache='third_pass_summary.jsonl',
+                        summary_cache=f'{WORKINGDIR}/third_pass_summary.jsonl',
                         mode=SieveMode.synthon_v3,
                         )
 for tier in ['Z0-05', 'Z05-08', 'Z08-1', 'Z1']:
