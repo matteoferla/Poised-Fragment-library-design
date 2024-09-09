@@ -484,7 +484,7 @@ class CompoundSieve:
         mol.SetProp('_Name', row['Identifier'])
         mol.SetProp('SMILES', row['SMILES'])
         for c in ['HAC', 'HBA', 'HBD', 'Rotatable_Bonds']:
-            mol.SetIntProp('HAC', int(verdict[c] if c in verdict[c] else row[c]))
+            mol.SetIntProp('HAC', int(verdict[c] if c in verdict else row[c]))
         for c in ('boringness', 'synthon_score', 'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore'):
             mol.SetDoubleProp(c, float(verdict[c]))
         tio = io.StringIO()
