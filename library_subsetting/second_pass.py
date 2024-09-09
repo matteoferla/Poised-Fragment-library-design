@@ -12,12 +12,6 @@ sys.path.append(f'{WORKINGDIR}/repo/library_subsetting')
 
 from library_subsetting_v3 import ParallelChunker, CompoundSieve, SieveMode, DatasetConverter, sieve_chunk
 
-CompoundSieve.cutoffs['min_hbonds_per_HAC'] = 1 / 5  # quartile
-CompoundSieve.cutoffs['max_rota_per_HAC'] = 1 / 5 # quartile (~.22)
-CompoundSieve.cutoffs['min_synthon_sociability_per_HAC'] = 0.354839  # quartile
-CompoundSieve.cutoffs['min_weighted_robogroups_per_HAC'] = 0.0838 # quartile
-CompoundSieve.cutoffs['max_boringness'] = 0
-
 path = Path(sys.argv[1])
 assert path.exists(), f'{path} does not exists'
 os.makedirs('/tmp/second_pass', exist_ok=True)

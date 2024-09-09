@@ -7,7 +7,7 @@
 #SBATCH --output=/opt/xchem-fragalysis-2/mferla/library_making/logs/slurm-error_%x_%j.log
 #SBATCH --error=/opt/xchem-fragalysis-2/mferla/library_making/logs/slurm-error_%x_%j.log
 #SBATCH --partition=main
-#SBATCH --export=DATASET_FILENAME
+#SBATCH --export=DATASET_FILENAME,SLACK_WEBHOOK
 #SBATCH --nodes=1
 #SBATCH --exclusive
 #SBATCH --priority=-666
@@ -29,7 +29,6 @@ echo "job_pid=$SLURM_TASK_PID job_gid=$SLURM_JOB_GID topology_addr=$SLURM_TOPOLO
 export CONDA_PREFIX=$DATA/mferla/waconda-slurm
 export CONDA_QUIET=true
 export CONDA_YES=true
-export SLACK_WEBHOOK='https://hooks.slack.com/services/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'
 
 source $CONDA_PREFIX/etc/profile.d/conda.sh
 export CONDA_ENVS_PATH="$CONDA_PREFIX/envs:$DATA/mferla/waconda/envs"
