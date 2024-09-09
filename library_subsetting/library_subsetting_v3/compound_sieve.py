@@ -229,6 +229,7 @@ class CompoundSieve:
                     AllChem.EmbedMolecule(mol)
                 self.calc_pip(mol, verdict)
                 self.calc_score(mol, verdict)
+                verdict['sdfblock'] = self.mol2sdf(mol, row, verdict)
         except BadCompound as e:
             verdict['issue'] = str(e)
             return verdict
@@ -467,6 +468,19 @@ class CompoundSieve:
         verdict[f'pip_rms'] = np.mean(np.power(pips - lower_bound, 2))
         verdict[f'pip_common_rms'] = np.mean(np.power(pip_commons - lower_bound, 2))
         verdict[f'pip_uncommon_rms'] = np.mean(np.power(pip_uncommons - lower_bound, 2))
+
+    def mol2sdf(self, mol, row, verdict):
+        mol.SetProp('_Name', row['Identifier'])
+        mol.SetProp('SMILES', row['SMILES'])
+        for c in ['HAC', 'HBA', 'HBD', 'Rotatable_Bonds']:
+            mol.SetIntProp('HAC', int(row[c] if c in row.index else verdict[c]))
+        for c in ('boringness', 'synthon_score', 'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore'):
+            mol.SetDoubleProp(c, float(verdict[c]))
+        tio = io.StringIO()
+        with Chem.SDWriter(tio) as w:
+            w.write(AllChem.RemoveHs(mol))
+        tio.seek(0)
+        return tio.read()
 
     @staticmethod
     def prep_df(df, smiles_col: str = 'SMILES', mol_col=None):
