@@ -78,21 +78,16 @@ def sieve_chunk2sdf(chunk: List[str],
     Path(out_filename_template).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
         # 'Z0-05', 'Z05-08', 'Z08-1', 'Z1'
-        with bz2.open(output_files['Z0-05'], 'wt') as fh:
-            for sdfblock in verdicts.loc[verdicts.acceptable &
-                                         (verdicts.combined_Zscore >= 0.) &
-                                         (verdicts.combined_Zscore < 0.5)]\
-                                    .sdfblock:
-                fh.write(sdfblock) # the $$$$\n is already in the sdfblock end
-        with bz2.open(output_files['Z05-08'], 'wt') as fh:
-            for sdfblock in verdicts.loc[verdicts.acceptable & (verdicts.combined_Zscore >= 0.5) & (verdicts.combined_Zscore < 0.8)].sdfblock:
-                fh.write(sdfblock) # the $$$$\n is already in the sdfblock end
-        with bz2.open(output_files['Z08-1'], 'wt') as fh:
-            for sdfblock in verdicts.loc[verdicts.acceptable & (verdicts.combined_Zscore >= 0.8) & (verdicts.combined_Zscore < 1.)].sdfblock:
-                fh.write(sdfblock) # the $$$$\n is already in the sdfblock end
-        with bz2.open(output_files['Z08-1'], 'wt') as fh:
-            for sdfblock in verdicts.loc[verdicts.acceptable & (verdicts.combined_Zscore >= 1.)].sdfblock:
-                fh.write(sdfblock) # the $$$$\n is already in the sdfblock end
+        masks = {'Z0-05': (verdicts.combined_Zscore >= 0.) & (verdicts.combined_Zscore < 0.5),
+                 'Z05-08': (verdicts.combined_Zscore >= 0.5) & (verdicts.combined_Zscore < 0.8),
+                    'Z08-1': (verdicts.combined_Zscore >= 0.8) & (verdicts.combined_Zscore < 1.),
+                    'Z1': (verdicts.combined_Zscore >= 1.)
+                 }
+        for tier, mask in masks.items():
+            with bz2.open(output_files[tier], 'wt') as fh:
+                for sdfblock in verdicts.loc[verdicts.acceptable & mask].sdfblock:
+                    if isinstance(sdfblock, str):
+                        fh.write(sdfblock) # the $$$$\n is already in the sdfblock end
     else:
         print(f"No compounds selected in {filename} chunk {i}", flush=True)
     # ## wrap up
