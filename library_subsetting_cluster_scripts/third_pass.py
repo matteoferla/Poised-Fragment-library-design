@@ -1,8 +1,5 @@
 # chunk basic so that more multiple tasks can then be run as opposed to megafiles!
 import bz2
-import traceback
-from pathlib import Path
-from typing import List
 from pathlib import Path
 import sys, os, shutil
 
@@ -10,7 +7,7 @@ WORKINGDIR = '/opt/xchem-fragalysis-2/mferla/library_making'
 os.chdir(WORKINGDIR)
 sys.path.append(f'{WORKINGDIR}/repo/library_subsetting')
 
-from library_subsetting_v3 import ParallelChunker, CompoundSieve, SieveMode, DatasetConverter, sieve_chunk2sdf
+from library_subsetting_module import ParallelChunker, SieveMode, sieve_chunk2sdf
 
 path = Path(sys.argv[1])
 assert path.exists(), f'{path} does not exists'

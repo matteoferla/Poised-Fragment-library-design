@@ -1,11 +1,10 @@
 __all__ = ['InchiType', 'BadCompound', 'SieveMode', 'CompoundSieve']
 
 import io
-import json
 import enum
-import itertools, functools
+import itertools
 from pathlib import Path
-from typing import List, Dict, Any, Optional, NewType, Union, Callable, Tuple
+from typing import List, Dict, Optional, NewType, Callable, Tuple
 
 import numpy as np
 import pandas as pd
@@ -13,9 +12,9 @@ from rdkit import Chem, rdBase
 from rdkit.Chem import rdMolDescriptors, AllChem, rdDeprotect
 from rdkit.Chem import FilterCatalog, rdfiltercatalog
 
-from .pipiteur import Pipiteur, PIPType
+from .pipiteur import Pipiteur
 from . import data
-from .util import ultranormalize, autopass_fun
+
 try:
     import torch
     from .USRCAT_sociability import calc_summed_scores
@@ -236,6 +235,8 @@ class CompoundSieve:
         except BadCompound as e:
             verdict['issue'] = str(e)
             return verdict
+        except KeyboardInterrupt as e:
+            raise e
         except self.exception_to_catch as e:
             verdict['issue'] = f'Uncaught {e.__class__.__name__} exception: {e}'
             return verdict

@@ -1,16 +1,13 @@
 # chunk basic so that more multiple tasks can then be run as opposed to megafiles!
 
-import traceback
 from pathlib import Path
-from typing import List
-from pathlib import Path
-import sys, os
+import sys
 
 WORKINGDIR = '/opt/xchem-fragalysis-2/mferla/library_making'
 
 sys.path.append(f'{WORKINGDIR}/repo/library_subsetting')
 
-from library_subsetting_v3 import ParallelChunker, CompoundSieve, SieveMode, DatasetConverter, sieve_chunk
+from library_subsetting_module import ParallelChunker, SieveMode, sieve_chunk
 
 path = Path(sys.argv[1])
 assert path.exists(), f'{path} does not exists'

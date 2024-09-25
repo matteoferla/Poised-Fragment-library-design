@@ -13,7 +13,7 @@ def read_data_file() -> str:
         return file.read()
 
 def read_json(filename: str) -> dict:
-    with (Path('.') / filename).open('r') as fh:
+    with (Path('') / filename).open('r') as fh:
         return json.load(fh)
 
 def read_pickle(filename: str) -> dict:

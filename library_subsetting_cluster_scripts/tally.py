@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, NewType, Optional
 import numpy as np
 import pandas as pd
-from library_subsetting.deprecated.library_classification import RoboDecomposer, Classifier
+from depracated.library_subsetting.library_classification import RoboDecomposer, Classifier
 from rdkit import Chem
 from rdkit import RDLogger
 from rdkit.Chem import AllChem, rdMolDescriptors

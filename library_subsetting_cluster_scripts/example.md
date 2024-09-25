@@ -8,26 +8,26 @@ from typing import List
 from pathlib import Path
 import sys, os
 
-sys.path.append('repo/library_subsetting')
+sys.path.append('repo/depracated')
 
-from library_subsetting_v3 import ParallelChunker, CompoundSieve, SieveMode, DatasetConverter, first_pass_process
+from library_subsetting_module import ParallelChunker, CompoundSieve, SieveMode, DatasetConverter, first_pass_process
 
 CompoundSieve.cutoffs['min_hbonds_per_HAC'] = 1 / 5  # quartile
-CompoundSieve.cutoffs['max_rota_per_HAC'] = 1 / 5 # quartile (~.22)
+CompoundSieve.cutoffs['max_rota_per_HAC'] = 1 / 5  # quartile (~.22)
 CompoundSieve.cutoffs['min_synthon_sociability_per_HAC'] = 0.354839  # quartile
-CompoundSieve.cutoffs['min_weighted_robogroups_per_HAC'] = 0.0838 # quartile
+CompoundSieve.cutoffs['min_weighted_robogroups_per_HAC'] = 0.0838  # quartile
 CompoundSieve.cutoffs['max_boringness'] = 0
 
 WORKINGDIR = '/Users/user/Coding/library_exploration'
 
-master = ParallelChunker(chunk_size = 10_000_000, task_func=first_pass_process)
+master = ParallelChunker(chunk_size=10_000_000, task_func=first_pass_process)
 for path in Path('/tmp').glob('Enamine_REAL_HAC_*.cxsmiles.bz2'):
     try:
         df = master.process_file(filename=path.as_posix(),
                                  out_filename_template=f'{WORKINGDIR}/first_pass_chunked/{path.stem}_chunk{{i}}.bz2',
-                                summary_cache='first_pass.jsonl',
-                                mode=SieveMode.basic,
-                                )
+                                 summary_cache='first_pass.jsonl',
+                                 mode=SieveMode.basic,
+                                 )
         print(path)
         df.to_csv(f'{WORKINGDIR}/{path.stem}_reduction_results.csv')
         del df
@@ -39,7 +39,7 @@ for path in Path('/tmp').glob('Enamine_REAL_HAC_*.cxsmiles.bz2'):
 
 ```python
 
-from library_subsetting_v3 import ParallelChunker
+from library_subsetting_module import ParallelChunker
 
 # ========================================================================================
 if __name__ == '__main__':
@@ -48,9 +48,9 @@ if __name__ == '__main__':
     chunk_size = 100_000
 
     GPUClassifier.cutoffs['min_hbonds_per_HAC'] = 1 / 5  # quartile
-    GPUClassifier.cutoffs['max_rota_per_HAC'] = 1 / 5 # quartile (~.22)
+    GPUClassifier.cutoffs['max_rota_per_HAC'] = 1 / 5  # quartile (~.22)
     GPUClassifier.cutoffs['min_synthon_sociability_per_HAC'] = 0.354839  # quartile
-    GPUClassifier.cutoffs['min_weighted_robogroups_per_HAC'] = 0.0838 # quartile
+    GPUClassifier.cutoffs['min_weighted_robogroups_per_HAC'] = 0.0838  # quartile
     GPUClassifier.cutoffs['max_boringness'] = 0
     print(GPUClassifier.cutoffs)
 
@@ -62,8 +62,8 @@ if __name__ == '__main__':
     master = ParallelMaster()
     filename = sys.argv[1]
     df = master.process_file(filename,
-                            common_synthons_tally=common_synthons_tally,
-                            common_synthons_usrcats=common_synthons_usrcats)
+                             common_synthons_tally=common_synthons_tally,
+                             common_synthons_usrcats=common_synthons_usrcats)
     df.to_csv(f'{Path(filename).stem}_reduction_results.csv')
     # assert len(df), 'No compounds were selected'
     # for some reason the results are not being passed back to the main process
