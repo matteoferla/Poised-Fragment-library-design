@@ -90,9 +90,10 @@ def sieve_chunk2(chunk: List[str],
             with bz2.open(output_files[tier], 'wt') as fh:
                 # value_col = sdfblock or cxsmiles_line
                 try:
-                    for row in verdicts.sort_values('combined_Zscore', ascending=False)\
+                    for i, row in verdicts.sort_values('combined_Zscore', ascending=False)\
                                            .drop_duplicates('SMILES') \
-                                           .loc[verdicts.acceptable & mask]:
+                                           .loc[verdicts.acceptable & mask]\
+                                           .iterrows():
                         if not store_sdf:
                             parts = [str(row.get(k, default=''))  for k in DatasetConverter.enamine_header_info]
                             fh.write('\t'.join(parts) + '\n')
