@@ -5,7 +5,7 @@ import sys
 
 WORKINGDIR = '/opt/xchem-fragalysis-2/mferla/library_making'
 
-sys.path.append(f'{WORKINGDIR}/repo/library_subsetting')
+sys.path.append(f'{WORKINGDIR}/repo/library_subsetting_module')
 
 from library_subsetting_module import ParallelChunker, SieveMode, sieve_chunk
 

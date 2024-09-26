@@ -35,8 +35,8 @@ class BadCompound(Exception):
 class SieveMode(enum.Enum):
     basic = 0   # based on row information, no RDKit
     substructure = 1  # based on RDKit
-    synthon_v2 = 2  # advanced, old v2.
-    synthon_v3 = 3  # advanced, v3
+    synthon_old = 2  # advanced, old v2.
+    synthon = 3  # advanced, v3
 
 class CompoundSieve:
     """
@@ -138,14 +138,16 @@ class CompoundSieve:
     pains_catalog = rdfiltercatalog.FilterCatalog(pains_catalogue_params)
 
     def __init__(self,
-                 mode: SieveMode = SieveMode.synthon_v3,
+                 mode: SieveMode = SieveMode.synthon,
                  common_synthons_tally: Optional[Dict[InchiType, int]]=None,
                  common_synthons_usrcats: Optional[Dict[InchiType, list]]=None,
                  screening_filename: Optional[str]=None,
-                 use_row_info: bool = True):
+                 use_row_info: bool = True,
+                 store_sdf=False):
         self.mode = mode
+        self.store_sdf = bool(store_sdf)
         self.use_row_info = use_row_info  # this should be false if the data is not available
-        if self.mode == SieveMode.synthon_v2:
+        if self.mode == SieveMode.synthon_old:
             assert common_synthons_tally is not None, 'common_synthons_tally must be provided'
             assert common_synthons_usrcats is not None, 'common_synthons_usrcats must be provided'
             self.common_synthons_tally = torch.tensor(common_synthons_tally, device='cuda')
@@ -153,7 +155,7 @@ class CompoundSieve:
             self.dejavu_synthons: Dict[InchiType, int] = {}
             self.nuveau_dejavu_synthons: Dict[InchiType, int] = {}
             self.robodecomposer = RestrictiveDecomposer()
-        elif self.mode == SieveMode.synthon_v3:
+        elif self.mode == SieveMode.synthon:
             self.screening_catalog = self.get_screening_library_catalog(screening_filename)
             self.robodecomposer = RestrictiveDecomposer()
             Pipiteur.fdef = data.read_MolChemicalFeatureFactory('Steph_features.fdef')
@@ -194,7 +196,9 @@ class CompoundSieve:
         return verdicts
 
     def __call__(self, row: pd.Series):
-        verdict = {'acceptable': False, 'issue': ''}
+        verdict = {'acceptable': False, 'issue': '',
+                   'Identifier': row.Identifier,
+                   'SMILES': row.SMILES}
         try:
             # ## Basic row info based
             if self.use_row_info:
@@ -208,6 +212,7 @@ class CompoundSieve:
                 mol = Chem.MolFromSmiles(row.SMILES)
             else:
                 mol = row.mol
+            verdict['SMILES'] = Chem.MolToSmiles(mol)
             self.calc_mol_info(mol, verdict)
             self.assess(verdict)
             self.calc_boringness(mol, verdict)
@@ -217,12 +222,12 @@ class CompoundSieve:
                 verdict['acceptable'] = True
                 return verdict
             # ## Synthon based
-            if self.mode == SieveMode.synthon_v2:
+            if self.mode == SieveMode.synthon_old:
                 self.calc_robogroups(mol, verdict)
                 self.assess(verdict)
                 self.calc_synthon_info_old(mol, verdict)
                 self.assess(verdict)
-            elif self.mode == SieveMode.synthon_v3:
+            elif self.mode == SieveMode.synthon:
                 self.calc_outtajail_score(mol, verdict)  # boost for matches to XChem screening library
                 self.calc_synthon_info(mol, verdict)
                 self.assess(verdict)
@@ -231,7 +236,8 @@ class CompoundSieve:
                     AllChem.EmbedMolecule(mol)
                 self.calc_pip(mol, verdict)
                 self.calc_score(mol, verdict)
-                verdict['sdfblock'] = self.mol2sdf(mol, row, verdict)
+                if self.store_sdf:
+                    verdict['sdfblock'] = self.mol2sdf(mol, row, verdict)
         except BadCompound as e:
             verdict['issue'] = str(e)
             return verdict

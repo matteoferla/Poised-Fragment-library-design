@@ -9,6 +9,7 @@ from . import CompoundSieve, SieveMode, DatasetConverter, write_jsonl
 from typing import List, Optional
 import bz2
 from pathlib import Path
+import contextlib
 
 def sieve_chunk(chunk: List[str],
                        filename: str,
@@ -51,11 +52,12 @@ def sieve_chunk(chunk: List[str],
     write_jsonl(info, summary_cache)
     return info
 
-def sieve_chunk2sdf(chunk: List[str],
+def sieve_chunk2(chunk: List[str],
                    filename: str,
                    i: int,
                    summary_cache:str,
                    out_filename_template: str,
+                   store_sdf: bool=False,
                    **kwargs):
     """
     The chunk is processed and saved to disk.
@@ -68,25 +70,40 @@ def sieve_chunk2sdf(chunk: List[str],
     :param kwargs: ParallelChunker may pass arguments that are not needed.
     :return:
     """
-    output_files = {tier: out_filename_template.format(i=i, tier=tier) for tier in ['Z0-05', 'Z05-08', 'Z08-1', 'Z1']}
-    classifier = CompoundSieve(mode=SieveMode.synthon_v3, use_row_info=False)
+    output_files = {tier: out_filename_template.format(i=i, tier=tier) for tier in ['Zn2-n1', 'Zn1-n05', 'Zn05-0', 'Z0-05', 'Z05-08', 'Z08-1', 'Z1']}
+    classifier = CompoundSieve(mode=SieveMode.synthon, use_row_info=False, store_sdf=store_sdf)
     # header_info is based off headers, but modified a bit
     df = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=DatasetConverter.enamine_header_info)
     # ## Process the chunk
     verdicts = classifier.classify_df(df)
     Path(out_filename_template).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
-        # 'Z0-05', 'Z05-08', 'Z08-1', 'Z1'
-        masks = {'Z0-05': (verdicts.combined_Zscore >= 0.) & (verdicts.combined_Zscore < 0.5),
+        masks = {'Zn2-n1': (verdicts.combined_Zscore >= -2.) & (verdicts.combined_Zscore < -1),
+                'Zn1-n05': (verdicts.combined_Zscore >= -1.) & (verdicts.combined_Zscore < -0.5),
+                 'Zn05-0': (verdicts.combined_Zscore >= -0.5) & (verdicts.combined_Zscore < 0.),
+                 'Z0-05': (verdicts.combined_Zscore >= 0.) & (verdicts.combined_Zscore < 0.5),
                  'Z05-08': (verdicts.combined_Zscore >= 0.5) & (verdicts.combined_Zscore < 0.8),
                   'Z08-1': (verdicts.combined_Zscore >= 0.8) & (verdicts.combined_Zscore < 1.),
                   'Z1': (verdicts.combined_Zscore >= 1.)
                  }
         for tier, mask in masks.items():
             with bz2.open(output_files[tier], 'wt') as fh:
-                for sdfblock in verdicts.loc[verdicts.acceptable & mask].sdfblock:
-                    if isinstance(sdfblock, str):
-                        fh.write(sdfblock) # the $$$$\n is already in the sdfblock end
+                # value_col = sdfblock or cxsmiles_line
+                try:
+                    for row in verdicts.sort_values('combined_Zscore', ascending=False)\
+                                           .drop_duplicates('SMILES') \
+                                           .loc[verdicts.acceptable & mask]:
+                        if not store_sdf:
+                            parts = [str(row.get(k, default=''))  for k in DatasetConverter.enamine_header_info]
+                            fh.write('\t'.join(parts) + '\n')
+                        elif 'sdfblock' in row.index and isinstance(row.sdfblock, str):
+                            fh.write(row.sdfblock) # the $$$$\n is already in the sdfblock end
+                        else:
+                            pass  # this really ought to be an error...
+                except KeyboardInterrupt as error:
+                    raise error
+                except Exception as error:
+                    print(f'Tier {tier}', error.__class__.__name__, str(error))
     else:
         print(f"No compounds selected in {filename} chunk {i}", flush=True)
     # ## wrap up
