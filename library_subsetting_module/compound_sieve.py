@@ -131,7 +131,7 @@ class CompoundSieve:
                    min_synthon_score_per_HAC=0.138470, # v2 is 0.0838
                    min_weighted_robogroups_per_HAC=0.0838,  # quartile
                    max_boringness=0.,
-                   min_combined_Zscore=0. # above the arithmetic mean
+                   #min_combined_Zscore=0. # above the arithmetic mean
                    )
 
     exception_to_catch = (Exception,    )
