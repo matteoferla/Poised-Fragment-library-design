@@ -117,6 +117,8 @@ class CompoundSieve:
                       'substituted aza': 0.3,  # ditto
                       }
     cutoffs = dict(
+                   # network max
+                   HAC=35,
                    # these are medchem pickiness
                    min_N_rings=1,
                    max_N_methylene=6,
