@@ -89,6 +89,8 @@ def sieve_chunk2(chunk: List[str],
         for tier, mask in masks.items():
             with bz2.open(output_files[tier], 'wt') as fh:
                 # value_col = sdfblock or cxsmiles_line
+                if not store_sdf:
+                    fh.write('\t'.join(DatasetConverter.enamine_header_info.keys()) + '\n')
                 try:
                     for i, row in verdicts.sort_values('combined_Zscore', ascending=False)\
                                            .drop_duplicates('SMILES') \
