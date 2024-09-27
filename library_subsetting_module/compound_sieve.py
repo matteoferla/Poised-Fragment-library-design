@@ -117,20 +117,21 @@ class CompoundSieve:
                       'substituted aza': 0.3,  # ditto
                       }
     cutoffs = dict(
-                   # network max
-                   max_HAC=35,
-                   # these are medchem pickiness
-                   min_N_rings=1,
-                   max_N_methylene=6,
-                   max_N_protection_groups=0,
-                   max_largest_ring_size=8,
+                   # ## first pass
+                   max_HAC=35, # network max
                    # these remove the worst quartiles
                    min_hbonds_per_HAC=1 / 5,
                    max_rota_per_HAC=1 / 5,
-                   min_synthon_sociability_per_HAC=0.354839,
-                   min_synthon_score_per_HAC=0.138470, # v2 is 0.0838
-                   min_weighted_robogroups_per_HAC=0.0838,  # quartile
-                   max_boringness=0.,
+                   # ## second pass
+                   # these are medchem pickiness
+                   min_N_rings=1,  # calc_mol_info
+                   max_N_methylene=6, # calc_mol_info
+                   max_N_protection_groups=0, # calc_mol_info
+                   max_largest_ring_size=8, # calc_mol_info
+                   max_boringness=0.,  # ``calc_boringness``
+                   # ## third pass
+                   #min_synthon_sociability_per_HAC=0.354839,
+                   #min_synthon_score_per_HAC=0.138470, # v2 is 0.0838 ``calc_synthon_info``
                    #min_combined_Zscore=0. # above the arithmetic mean
                    )
 

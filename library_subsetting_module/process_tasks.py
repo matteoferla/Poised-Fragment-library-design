@@ -3,7 +3,7 @@ Multiprocessing task, in Pebble at least, cannot be from __main__.
 They need to be imported from a module.
 """
 
-__all__ = ['sieve_chunk', 'test_process_chunk', 'sieve_chunk2sdf']
+__all__ = ['sieve_chunk', 'test_process_chunk', 'sieve_chunk2']
 
 from . import CompoundSieve, SieveMode, DatasetConverter, write_jsonl
 from typing import List, Optional
