@@ -76,6 +76,8 @@ def sieve_chunk2(chunk: List[str],
     df = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=DatasetConverter.enamine_header_info)
     # ## Process the chunk
     verdicts = classifier.classify_df(df)
+    headers = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'boringness', 'synthon_score',
+               'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore']
     Path(out_filename_template).parent.mkdir(exist_ok=True, parents=True)
     if sum(verdicts.acceptable):
         masks = {'Zn2-n1': (verdicts.combined_Zscore >= -2.) & (verdicts.combined_Zscore < -1),
@@ -90,14 +92,14 @@ def sieve_chunk2(chunk: List[str],
             with bz2.open(output_files[tier], 'wt') as fh:
                 # value_col = sdfblock or cxsmiles_line
                 if not store_sdf:
-                    fh.write('\t'.join(DatasetConverter.enamine_header_info.keys()) + '\n')
+                    fh.write('\t'.join(headers) + '\n')
                 try:
                     for i, row in verdicts.sort_values('combined_Zscore', ascending=False)\
                                            .drop_duplicates('SMILES') \
                                            .loc[verdicts.acceptable & mask]\
                                            .iterrows():
                         if not store_sdf:
-                            parts = [str(row.get(k, default=''))  for k in DatasetConverter.enamine_header_info]
+                            parts = [str(row.get(k, default=''))  for k in headers]
                             fh.write('\t'.join(parts) + '\n')
                         elif 'sdfblock' in row.index and isinstance(row.sdfblock, str):
                             fh.write(row.sdfblock) # the $$$$\n is already in the sdfblock end
