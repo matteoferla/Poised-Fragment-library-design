@@ -95,7 +95,7 @@ def sieve_chunk2(chunk: List[str],
                 if not store_sdf:
                     fh.write('\t'.join(headers) + '\n')
                 try:
-                    for i, row in verdicts.sort_values('combined_Zscore', ascending=False)\
+                    for verdict_idx, row in verdicts.sort_values('combined_Zscore', ascending=False)\
                                            .drop_duplicates('SMILES') \
                                            .loc[verdicts.acceptable & mask]\
                                            .iterrows():
