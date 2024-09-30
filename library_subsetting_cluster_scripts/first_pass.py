@@ -16,8 +16,8 @@ master = ParallelChunker(chunk_size = 10_000_000, task_func=sieve_chunk)
 out_filename_template=f'{WORKINGDIR}/first_pass/{path.stem}_chunk{{i}}.bz2'
 df = master.process_file(filename=path.as_posix(),
                          out_filename_template=out_filename_template,
-                        summary_cache='first_pass_summary.jsonl',
-                        mode=SieveMode.basic,
+                         summary_cache='first_pass_summary.jsonl',
+                         mode=SieveMode.basic,
                         )
 print(path, len(df))
 df.to_csv(f'{WORKINGDIR}/csvs/{path.stem}_reduction_results.csv')

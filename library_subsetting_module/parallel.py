@@ -100,3 +100,4 @@ class ParallelChunker:
         iterator = iter(iterable)
         for first in iterator:
             yield list(itertools.chain([first], itertools.islice(iterator, size - 1)))
+
