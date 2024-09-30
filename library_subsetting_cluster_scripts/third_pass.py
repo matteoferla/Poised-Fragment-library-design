@@ -21,12 +21,15 @@ df = master.process_file(filename=infile_path.as_posix(),
                         summary_cache=f'{WORKINGDIR}/third_pass_summary.jsonl',
                         mode=SieveMode.synthon,
                         )
+headers = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'boringness', 'synthon_score',
+               'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore']
 for tier in ['Zn2-n1', 'Zn1-n05', 'Zn05-0', 'Z0-05', 'Z05-08', 'Z08-1', 'Z1']:
     out_filename=f'{WORKINGDIR}/third_pass/{tier}/{infile_path.name}'
     if sdf_mode:
         out_file = out_filename.replace('.cxsmiles.bz2', '.sdf.bz2')
     os.makedirs(Path(out_filename).parent, exist_ok=True)
     with bz2.open(out_filename, 'wt') as out_fh:
+        out_fh.write('\t'.join(headers) + '\n')
         for chunk_path in Path('/tmp/third_pass').glob(f'{infile_path.stem}_{tier}*.bz2'):
             with contextlib.suppress(Exception):  # why would this happen??
                 with bz2.open(chunk_path, 'rt') as in_fh:
