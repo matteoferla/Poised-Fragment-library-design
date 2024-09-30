@@ -89,7 +89,7 @@ class ParallelChunker:
                                     **kwargs}
                     future = pool.schedule(self.task_func, kwargs=chunk_kwargs)
                     self.futures.append(future)
-        self.resolve()  # wait for all futures to complete
+        self.resolve()  # wait for all futures to complete as we are done
         self.futures = []
         df = pd.DataFrame(self.results)
         return df

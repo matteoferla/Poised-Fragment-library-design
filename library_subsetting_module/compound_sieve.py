@@ -202,6 +202,9 @@ class CompoundSieve:
         verdict = {'acceptable': False, 'issue': '',
                    'Identifier': row.Identifier,
                    'SMILES': row.SMILES}
+        if row.SMILES == 'SMILES':
+            verdict['issue'] = 'rogue header'
+            return verdict
         try:
             # ## Basic row info based
             if self.use_row_info:

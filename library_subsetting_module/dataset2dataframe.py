@@ -39,6 +39,8 @@ class DatasetConverter:
         :param header_info:
         :return:
         """
+        # remove empty lines and lines with SMILES (rogue headers)
+        content = '\n'.join([line for line in content.strip().split('\n') if line.strip() and 'SMILES' not in line.upper()])
         df = pd.read_csv(io.StringIO(content),
                          delimiter='\t',
                          names=list(header_info.keys()),
