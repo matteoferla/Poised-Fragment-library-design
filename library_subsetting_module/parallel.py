@@ -27,7 +27,8 @@ class ParallelChunker:
 
     def __init__(self,
                  chunk_size=100_000,
-                 task_func: FunctionType=print):
+                 task_func: FunctionType=print,
+                 verbose: bool=False):
         """
         ``filename`` and ``out_filename_template`` are arguments of ``.process_file``
         because they are file specific, ``chunk_size`` and ``task_func`` are not.
@@ -40,6 +41,7 @@ class ParallelChunker:
         self.results = []
         self.chunk_size = chunk_size
         self.task_func = task_func
+        self.verbose = False
 
     def resolve(self):
         for future in self.futures:
@@ -49,7 +51,8 @@ class ParallelChunker:
                 raise e
             except self.exceptions_to_catch as e:
                 tb = '\n'.join(traceback.format_exception(e))
-                print(f"Processing failed: {e.__class__.__name__} {e}\n", tb)
+                if self.verbose:
+                    print(f"Task failed but caught: {e.__class__.__name__} {e}\n", tb)
                 self.results.append({'error': f'{e.__class__.__name__} {e}'})
 
     def wait(self):
@@ -86,7 +89,8 @@ class ParallelChunker:
                                     **kwargs}
                     future = pool.schedule(self.task_func, kwargs=chunk_kwargs)
                     self.futures.append(future)
-        self.wait()
+        self.resolve()  # wait for all futures to complete
+        self.futures = []
         df = pd.DataFrame(self.results)
         return df
 

@@ -72,7 +72,7 @@ def sieve_chunk2(chunk: List[str],
     """
     output_files = {tier: out_filename_template.format(i=i, tier=tier) for tier in ['Zn2-n1', 'Zn1-n05', 'Zn05-0', 'Z0-05', 'Z05-08', 'Z08-1', 'Z1']}
     classifier = CompoundSieve(mode=SieveMode.synthon, use_row_info=False, store_sdf=store_sdf)
-    classifier.cutoffs = {}  # already applied anyway...
+    classifier.cutoffs = {'max_HAC': 35}  # already applied anyway...
     # header_info is based off headers, but modified a bit
     df = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=DatasetConverter.enamine_header_info)
     # ## Process the chunk

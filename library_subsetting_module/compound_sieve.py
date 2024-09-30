@@ -130,7 +130,7 @@ class CompoundSieve:
                    max_largest_ring_size=8, # calc_mol_info
                    max_boringness=0.,  # ``calc_boringness``
                    # ## third pass
-                   #min_synthon_sociability_per_HAC=0.354839,
+                   #old ---> min_synthon_sociability_per_HAC=0.354839,
                    #min_synthon_score_per_HAC=0.138470, # v2 is 0.0838 ``calc_synthon_info``
                    #min_combined_Zscore=0. # above the arithmetic mean
                    )
