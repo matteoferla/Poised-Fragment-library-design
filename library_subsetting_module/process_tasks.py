@@ -10,6 +10,7 @@ from typing import List, Optional
 import bz2
 from pathlib import Path
 import contextlib
+import pandas as pd
 
 def sieve_chunk(chunk: List[str],
                        filename: str,
@@ -74,9 +75,9 @@ def sieve_chunk2(chunk: List[str],
     classifier = CompoundSieve(mode=SieveMode.synthon, use_row_info=False, store_sdf=store_sdf)
     #classifier.cutoffs = {'max_HAC': 35}  # this was not causing any issues.
     # header_info is based off headers, but modified a bit
-    df = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=DatasetConverter.enamine_header_info)
+    df: pd.DataFrame = DatasetConverter.read_cxsmiles_block('\n'.join(chunk), header_info=DatasetConverter.enamine_header_info)
     # ## Process the chunk
-    verdicts = classifier.classify_df(df)
+    verdicts: pd.DataFrame = classifier.classify_df(df)
     headers = ['SMILES', 'Identifier', 'HAC', 'HBA', 'HBD', 'Rotatable_Bonds', 'boringness', 'synthon_score',
                'pip_common_mean', 'pip_uncommon_mean', 'combined_Zscore']
     Path(out_filename_template).parent.mkdir(exist_ok=True, parents=True)
@@ -113,9 +114,13 @@ def sieve_chunk2(chunk: List[str],
     else:
         print(f"No compounds selected in {filename} chunk {i}", flush=True)
     # ## wrap up
+    if 'issue' in verdicts.columns:
+        issues = verdicts.issue.value_counts().to_dict()
+    else:
+        issues = {}
     info = {'filename': filename, 'output_filename': out_filename_template.format(i=i, tier='-'), 'chunk_idx': i,
-            **verdicts.issue.value_counts().to_dict()}
-    write_jsonl(info, summary_cache)
+            **issues}
+    write_jsonl(obj=info, filename=summary_cache)
     return info
 
 def test_process_chunk(chunk, *args, **kwargs):
