@@ -86,16 +86,23 @@ Removes by default the lower quartile of number of HBonds/HAC and Rotatable bond
 This is because Enamine REAL is rich in alkanes and greasy compounds with no HBond donors.
 
 The second step (property `mode` set to `SieveMode.substructure`)
-* N_rings ≥ 1
-* etc.
-* unwanted substructures (protection groups, PAINS etc.)
-* 'boringness'
-* 'synthon_score_per_HAC'
+* N rings ≥ 1
+* HAC ≤ 35
+* (HBD+HBA)/HAC ≥ 1 / 5 (~75% quantile)
+* Rotatable-bonds/HAC ≤ 1 / 5 (~75% quantile)
+* N methylene ≤ 6
+* largest ring size ≤ 8
+* no unwanted substructures:
+  * protection groups,
+  * PAINS and 
+  * some exocyclic groups disliked by Medicinal Chemists (exocyclic carbamate, ester, imine, and hydrazines)
+* 'boringness' ≤ 0 (~80% quantile)
+* 'synthon_score_per_HAC' ≥ 0.138 (~75% quantile)
 
-The third step (property `mode` set to `SieveMode.synthon_v3`) generates a 3D conformer
+The third step (property `mode` set to `SieveMode.synthon`) generates a 3D conformer
 and generates a weighted Zscore combining the above metrics, a 'get-out-of-jail' value for compounds
 that are superstructures of library compounds, and a pharmacophore score based 
-on uniqueness of pharmacophore distance trios.
+on uniqueness of pharmacophore distance trios (see pharmacophore).
 This unified Zscore allows ranking.
 
 ## Other
