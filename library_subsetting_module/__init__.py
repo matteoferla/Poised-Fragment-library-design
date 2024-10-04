@@ -6,3 +6,4 @@ from .util import read_jsonl, write_jsonl
 from .process_tasks import sieve_chunk, test_process_chunk, sieve_chunk2
 from .pipiteur import Pipiteur, PIPType
 from . import data
+from .archive import *

@@ -85,7 +85,15 @@ is a cutoff based on the properties of the CXSMILES row.
 Removes by default the lower quartile of number of HBonds/HAC and Rotatable bonds/HAC.
 This is because Enamine REAL is rich in alkanes and greasy compounds with no HBond donors.
 
-The second step (property `mode` set to `SieveMode.substructure`)
+The second step (property `mode` set to `SieveMode.substructure`) creates a molecule from the SMILES,
+and filters.
+
+The third step (property `mode` set to `SieveMode.synthon`) generates a 3D conformer
+and generates a weighted Zscore combining the above metrics, a 'get-out-of-jail' value for compounds
+that are superstructures of library compounds, and a pharmacophore score based 
+on uniqueness of pharmacophore distance trios (see pharmacophore).
+This unified Zscore allows ranking. The Zscore in some cases is tanh clipped to 2 sigma in some cases.
+
 * N rings ≥ 1
 * HAC ≤ 35
 * (HBD+HBA)/HAC ≥ 1 / 5 (~75% quantile)
@@ -99,11 +107,31 @@ The second step (property `mode` set to `SieveMode.substructure`)
 * 'boringness' ≤ 0 (~80% quantile)
 * 'synthon_score_per_HAC' ≥ 0.138 (~75% quantile)
 
-The third step (property `mode` set to `SieveMode.synthon`) generates a 3D conformer
-and generates a weighted Zscore combining the above metrics, a 'get-out-of-jail' value for compounds
-that are superstructures of library compounds, and a pharmacophore score based 
-on uniqueness of pharmacophore distance trios (see pharmacophore).
-This unified Zscore allows ranking.
+### Boringness penalty
+
+One issue is that the most sociable compounds are the most boring, causing a rise in para-polyphenyl chains. 
+![img.png](images/phenyl.png)
+
+To counter this, a filter was added that the compound must have a negative 'boringness' score,
+defined as:
+
+* +1 for each aromatic carbocycle
+* +1/4 for each methylene group
+* -1 for each bridged, spiro, fused and/or alicylic ring (stacks)
+* -1/2 for each heterocycle
+
+The PMI are not factor in even if rod-like compounds dominate Enamine REAL,
+this is because the subset of Enamine+ MCule will be used by the FragmentKnitwork algorithm,
+so will do only two-way fragment mergers.
+
+### Pharmacophore
+Most pharmacophore methods either align pairwise, or extract distances of the pharmacophores in a PMI+centroid aligned way.
+This is not ideal for smaller compounds, cf. [pharmacophore-distances.md](pharmacophore-distances.md).
+So herein a 3rd order matrix of binned distances of trios of pharmacophores was used —using Steph's definitions of pharmacophores.
+This approach was inspired by [Ligity paper](https://pubs.acs.org/doi/10.1021/acs.jcim.8b00779)
+Steph may change the method etc. so this circumvents the issue of the method being too specific.
+
+The trios with HBA, HBD and pi only were grouped as `common` and those without as `uncommon`.
 
 ## Other
 
